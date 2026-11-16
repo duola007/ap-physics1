@@ -75,6 +75,10 @@ input[type=range]{width:100%;accent-color:var(--salmon);height:28px}
 .cell{min-height:40px;padding:0;border-radius:8px;border:1.5px solid var(--rule);background:transparent;font-size:14px;font-variant-numeric:tabular-nums;position:relative}
 .cell.ans{background:var(--fill);color:var(--bg);border-color:var(--fill)}
 .cell.cur{outline:3px solid var(--salmon);outline-offset:1px}
+.cell.pk{box-shadow:inset 0 -4px 0 var(--salmon)}
+.peek{margin-top:14px;border:1px solid var(--rule);border-radius:12px;background:var(--sheet);padding:12px 14px}
+.peek .res{font-weight:700;margin:0 0 10px}
+.peekbtn{margin-top:12px}
 .cell.flg::after{content:"";position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--flag)}
 .legend{font-size:13px;color:var(--mut);display:flex;gap:12px;flex-wrap:wrap}
 textarea{width:100%;min-height:180px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--panel);font-size:16px}
@@ -139,6 +143,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
           <button class="pri" id="start">开始测评</button>
           <button id="resume" class="hide">继续上次未完成的测评</button>
           <label class="row mut" style="font-size:14px;gap:6px"><input type="checkbox" id="fresh" checked> 优先抽没做过的题</label>
+          <label class="row mut" style="font-size:14px;gap:6px"><input type="checkbox" id="allowPeek" checked> 做完一题后允许查看答案</label>
         </div>
       </div>
     </div>
@@ -177,7 +182,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
       <strong>答题卡</strong>
       <div class="grid" id="gridM"></div>
       <div id="gridFwrap"><strong style="font-size:14px">Section II</strong><div class="grid" id="gridF"></div></div>
-      <div class="legend"><span>■ 已作答</span><span style="color:var(--flag)">● 已标记</span><span>键盘 A–E 选择，←/→ 翻页</span></div>
+      <div class="legend"><span>■ 已作答</span><span style="color:var(--flag)">● 已标记</span><span style="color:var(--salmon)">▁ 看过答案</span><span>键盘 A–E 选择，←/→ 翻页</span></div>
     </aside>
   </div>
 </section>
@@ -255,7 +260,7 @@ function pick(groups, n, preferFresh, only){
 }
 function begin(qsM, qsF){
   const qs = [...qsM.map(q => ({...q, t: 'mcq'})), ...qsF.map(q => ({...q, t: 'frq'}))];
-  S = {phase: 'exam', qs, ans: {}, flag: {}, cur: 0, sec: qsM.length ? 'M' : 'F', timed,
+  S = {phase: 'exam', qs, ans: {}, flag: {}, peek: {}, allowPeek: $('allowPeek').checked, cur: 0, sec: qsM.length ? 'M' : 'F', timed,
        left: {M: qsM.length * SEC_M, F: qsF.length * SEC_F}, used: {M: 0, F: 0}, self: {}, who: $('who').value.trim(), started: Date.now()};
   store.set('ap1-who', S.who);
   if (!qsM.length) S.cur = 0;
@@ -268,6 +273,7 @@ $('resume').onclick = () => { S = store.get('ap1u6-state', null); if (S) enterEx
 const idxSec = sec => S.qs.map((q, i) => [q, i]).filter(([q]) => (q.t === 'mcq') === (sec === 'M')).map(([, i]) => i);
 function show(v){ ['vSetup', 'vExam', 'vRes'].forEach(x => $(x).classList.toggle('hide', x !== v)); window.scrollTo(0, 0); }
 function enterExam(){
+  S.peek = S.peek || {};
   show('vExam');
   const iM = idxSec('M'), iF = idxSec('F');
   if (S.sec === 'F' && !iF.includes(S.cur)) S.cur = iF[0];
@@ -297,13 +303,18 @@ function render(){
   if (q.t === 'mcq') {
     const sel = S.ans[q.id] || [];
     $('ansArea').innerHTML = `<div class="choices ${q.multi ? 'multi' : ''}" role="group" aria-label="选择答案">${q.opts.map(o => `<button class="bub" data-o="${o}" aria-pressed="${sel.includes(o)}">${o}</button>`).join('')}</div>
-      <p class="mut" style="font-size:14px;margin:0">${q.multi ? '本题选两个答案（两个都对才得分）。' : '单选，点同一项可取消。'}</p>`;
-    $('ansArea').querySelectorAll('.bub').forEach(b => b.onclick = () => choose(b.dataset.o));
+      <p class="mut" style="font-size:14px;margin:0">${S.peek[q.id] ? '已看过答案，本题作答已锁定。' : q.multi ? '本题选两个答案（两个都对才得分）。' : '单选，点同一项可取消。'}</p>${peekBlock(q)}`;
+    $('ansArea').querySelectorAll('.bub').forEach(b => { b.disabled = !!S.peek[q.id]; b.onclick = () => choose(b.dataset.o); });
   } else {
     $('ansArea').innerHTML = `<p class="mut" style="font-size:14px;margin:16px 0 8px">FRQ 请在纸上作答（画图、推导都在纸上）。下面可以记下关键结论，交卷后会和评分标准放在一起，方便自评。</p>
-      <textarea id="frqTxt" placeholder="可选：记录你的答案要点">${S.ans[q.id] || ''}</textarea>`;
+      <textarea id="frqTxt" placeholder="可选：记录你的答案要点" ${S.peek[q.id] ? 'readonly' : ''}>${S.ans[q.id] || ''}</textarea>${peekBlock(q)}`;
     $('frqTxt').oninput = e => { S.ans[q.id] = e.target.value; grids(); };
   }
+  const pb = $('ansArea').querySelector('.peekbtn');
+  if (pb) pb.onclick = async () => {
+    const msg = q.t === 'mcq' ? '查看答案后，这道题的作答将被锁定，不能再修改。确定查看？' : '查看评分标准后，作答要点将变为只读。确定查看？';
+    if (await ask(msg)) { S.peek[q.id] = true; render(); }
+  };
   $('flag').textContent = S.flag[q.id] ? '取消标记' : '标记待检查';
   $('prev').disabled = pos === 0; $('next').disabled = pos === ids.length - 1;
   grids(); paintTimer(); save();
@@ -311,13 +322,25 @@ function render(){
 }
 function grids(){
   const cell = i => { const q = S.qs[i], a = S.ans[q.id]; const done = q.t === 'mcq' ? (a && a.length) : (a && a.trim()); const n = idxSec(q.t === 'mcq' ? 'M' : 'F').indexOf(i) + 1;
-    return `<button class="cell ${done ? 'ans' : ''} ${i === S.cur ? 'cur' : ''} ${S.flag[q.id] ? 'flg' : ''}" data-i="${i}" ${(q.t === 'mcq') !== (S.sec === 'M') ? 'disabled' : ''} aria-label="第${n}题">${n}</button>`; };
+    return `<button class="cell ${done ? 'ans' : ''} ${i === S.cur ? 'cur' : ''} ${S.flag[q.id] ? 'flg' : ''} ${S.peek && S.peek[q.id] ? 'pk' : ''}" data-i="${i}" ${(q.t === 'mcq') !== (S.sec === 'M') ? 'disabled' : ''} aria-label="第${n}题">${n}</button>`; };
   $('gridM').innerHTML = idxSec('M').map(cell).join('');
   $('gridF').innerHTML = idxSec('F').map(cell).join(''); $('gridFwrap').classList.toggle('hide', !idxSec('F').length);
   document.querySelectorAll('.cell').forEach(c => c.onclick = () => { S.cur = +c.dataset.i; render(); });
 }
+function peekBlock(q){
+  if (!S.allowPeek) return '';
+  if (!S.peek[q.id]) {
+    const ready = q.t === 'frq' || (S.ans[q.id] || []).length >= (q.multi ? 2 : 1);
+    return `<button class="peekbtn" ${ready ? '' : 'disabled'}>查看答案</button>${ready ? '' : '<span class="mut" style="font-size:13px;margin-left:8px">先作答，才能查看答案</span>'}`;
+  }
+  if (q.t === 'mcq') {
+    const ok = right(q);
+    return `<div class="peek"><p class="res" style="color:${ok ? 'var(--ok)' : 'var(--bad)'}">${ok ? '回答正确' : '回答错误'} · 正确答案：${q.key.join('、')}</p><div class="page">${img(q.a, '答案与解析').replace('lazy', 'eager')}</div></div>`;
+  }
+  return `<div class="peek"><p class="res">评分标准（交卷后可按此自评打分）</p><div class="page">${img(q.a, '评分标准').replace('lazy', 'eager')}</div></div>`;
+}
 function choose(o){
-  const q = S.qs[S.cur]; let a = S.ans[q.id] || [];
+  const q = S.qs[S.cur]; if (S.peek[q.id]) return; let a = S.ans[q.id] || [];
   if (q.multi) { a = a.includes(o) ? a.filter(x => x !== o) : (a.length >= 2 ? [a[1], o] : [...a, o]); }
   else a = a[0] === o ? [] : [o];
   S.ans[q.id] = a; render();
@@ -383,7 +406,7 @@ function renderReview(){
     const stem = q.stem ? `<div class="lbl">共用情境</div><div class="page">${img(BANK.stems[q.stem], '情境')}</div>` : '';
     if (q.t === 'mcq') {
       const a = (S.ans[q.id] || []).join('、') || '未作答', ok = right(q);
-      return `<details class="rv"><summary><strong>选择题 ${nM(q)}</strong><span class="tag ${ok ? 'ok' : 'bad'}">${ok ? '正确' : '错误'}</span><span>你的答案：<b>${a}</b></span><span>正确答案：<b>${q.key.join('、')}</b></span>${S.flag[q.id] ? '<span class="tag na">已标记</span>' : ''}<span class="mut" style="font-size:13px">${q.src}</span></summary>
+      return `<details class="rv"><summary><strong>选择题 ${nM(q)}</strong><span class="tag ${ok ? 'ok' : 'bad'}">${ok ? '正确' : '错误'}</span><span>你的答案：<b>${a}</b></span><span>正确答案：<b>${q.key.join('、')}</b></span>${S.flag[q.id] ? '<span class="tag na">已标记</span>' : ''}${S.peek && S.peek[q.id] ? '<span class="tag na">作答中看过答案</span>' : ''}<span class="mut" style="font-size:13px">${q.src}</span></summary>
         <div class="rvbody">${stem}<div class="lbl">评分标准 / 解析（绿色框为正确选项）</div><div class="page">${img(q.a, '答案')}</div></div></details>`;
     }
     const v = S.self[q.id] ?? '';
@@ -412,7 +435,7 @@ $('copy').onclick = async () => {
   const wrongList = t.M.filter(q => !right(q)).map(q => `${idxSec('M').indexOf(S.qs.indexOf(q)) + 1}(${q.src})`).join('；');
   const txt = [`AP Physics 1 Unit 6 转动系统的能量与动量测评${S.who ? ' · ' + S.who : ''}`, $('resWho').textContent,
     `综合 ${Math.round(t.pct * 100)}%`, t.M.length ? `选择题 ${t.mOK}/${t.M.length}，用时 ${fmt(S.used.M)}` : '', t.F.length ? `FRQ 自评 ${t.fGot}/${t.fMax}` : '',
-    wrongList ? `错题：${wrongList}` : ''].filter(Boolean).join('\n');
+    wrongList ? `错题：${wrongList}` : '', Object.keys(S.peek || {}).length ? `作答中查看答案：${Object.keys(S.peek).length} 题` : ''].filter(Boolean).join('\n');
   try { await navigator.clipboard.writeText(txt); toast('已复制，可直接粘贴发送'); } catch (e) { toast('无法访问剪贴板，请手动选中复制'); }
 };
 document.addEventListener('click', e => { if (e.target.tagName === 'IMG' && e.target.closest('.page')) e.target.closest('.page').classList.toggle('zoom'); });
