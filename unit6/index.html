@@ -79,6 +79,10 @@ input[type=range]{width:100%;accent-color:var(--salmon);height:28px}
 .peek{margin-top:14px;border:1px solid var(--rule);border-radius:12px;background:var(--sheet);padding:12px 14px}
 .peek .res{font-weight:700;margin:0 0 10px}
 .peekbtn{margin-top:12px}
+.bookcard{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:14px 16px}
+.bookcard b{font-size:22px;font-variant-numeric:tabular-nums}
+.bk-meta{font-size:13px;color:var(--mut)}
+.streak{display:inline-flex;gap:3px;vertical-align:middle}.streak i{width:10px;height:10px;border-radius:50%;border:1.5px solid var(--ok);display:inline-block}.streak i.on{background:var(--ok)}
 .cell.flg::after{content:"";position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--flag)}
 .legend{font-size:13px;color:var(--mut);display:flex;gap:12px;flex-wrap:wrap}
 textarea{width:100%;min-height:180px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--panel);font-size:16px}
@@ -160,6 +164,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
         <div><strong id="sF"></strong><span class="mut">道 FRQ</span></div>
         <div><strong id="sDone">0</strong><span class="mut">道已做过（本设备）</span></div>
       </div>
+      <div class="bookcard"><div><strong>错题本</strong><div class="bk-meta" id="bkMeta"></div></div><button id="openBook">打开错题本</button></div>
       <p class="mut" style="font-size:14px;margin-top:14px">AP Physics 1 正式考试：Section I 选择题 42 道 / 85 分钟，Section II FRQ 4 道 / 95 分钟，各占 50%。“AP 标准节奏”按同样的每题用时给你计时。每道题下方都标了出处，方便核对原卷。</p>
     </div>
   </div>
@@ -208,6 +213,7 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
     <button id="wrongOnly">只重做错题</button>
     <button id="copy">复制成绩摘要</button>
     <button id="home">回到设置</button>
+    <button id="toBook">打开错题本</button>
   </div>
   <div class="row" style="justify-content:space-between">
     <h2 style="margin:0">逐题对照</h2>
@@ -218,13 +224,35 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
   <div id="review"></div>
 </section>
 
+<!-- WRONG BOOK -->
+<section id="vBook" class="wrap hide">
+  <p class="mut" style="margin:0 0 6px"><a href="#" id="bkBack" style="color:inherit">← 返回</a></p>
+  <h1>错题本</h1>
+  <p class="mut" style="max-width:66ch">交卷时答错的选择题、FRQ 自评没拿满分的题会自动记进来；之后连续做对两次就算「已掌握」，默认隐藏。所有单元和综合模拟共用这一个错题本，只保存在当前设备的这个浏览器里。</p>
+  <div class="row" style="margin:12px 0">
+    <select id="bkUnit" style="min-height:44px;border:1px solid var(--line);border-radius:10px;padding:6px 10px;background:var(--panel)"></select>
+    <label class="row mut" style="font-size:14px;gap:6px"><input type="checkbox" id="bkShowM"> 显示已掌握的题</label>
+    <span class="grow"></span>
+    <button class="pri" id="bkRedo">重做这些错题</button>
+  </div>
+  <div class="row" style="margin:0 0 12px">
+    <button id="bkExport">导出错题本</button>
+    <label class="row" style="gap:6px"><button id="bkImportBtn" type="button">导入错题本</button><input type="file" id="bkImport" accept=".json,application/json" class="hide"></label>
+    <span class="mut" style="font-size:13px">换设备时：在旧设备导出，在新设备导入（会合并，不会覆盖）。</span>
+  </div>
+  <div id="bkList"></div>
+</section>
+
 <dialog id="dlg"><p id="dlgMsg" style="margin-top:0"></p><div class="row" style="justify-content:flex-end"><button id="dlgNo">取消</button><button class="pri" id="dlgYes">确定</button></div></dialog>
 <div class="toast hide" id="toast"></div>
 
 <script>
 {
 const BANK = {"mcq":[{"stem":null,"items":[{"id":"2f5d79_007","src":"ROTATION 1 MCQ #7","q":"2f5d79_007q.webp","a":"2f5d79_007a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2f5d79_013","src":"ROTATION 1 MCQ #13","q":"2f5d79_013q.webp","a":"2f5d79_013a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2f5d79_016","src":"ROTATION 1 MCQ #16","q":"2f5d79_016q.webp","a":"2f5d79_016a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2f5d79_023","src":"ROTATION 1 MCQ #23","q":"2f5d79_023q.webp","a":"2f5d79_023a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2f5d79_044","src":"ROTATION 1 MCQ #44","q":"2f5d79_044q.webp","a":"2f5d79_044a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2f5d79_045","src":"ROTATION 1 MCQ #45","q":"2f5d79_045q.webp","a":"2f5d79_045a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2f5d79_051","src":"ROTATION 1 MCQ #51","q":"2f5d79_051q.webp","a":"2f5d79_051a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2f5d79_054","src":"ROTATION 1 MCQ #54","q":"2f5d79_054q.webp","a":"2f5d79_054a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2f5d79_057","src":"ROTATION 1 MCQ #57","q":"2f5d79_057q.webp","a":"2f5d79_057a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2f5d79_058","src":"ROTATION 1 MCQ #58","q":"2f5d79_058q.webp","a":"2f5d79_058a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2f5d79_059","src":"ROTATION 1 MCQ #59","q":"2f5d79_059q.webp","a":"2f5d79_059a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2f5d79_060","src":"ROTATION 1 MCQ #60","q":"2f5d79_060q.webp","a":"2f5d79_060a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2f5d79_061","src":"ROTATION 1 MCQ #61","q":"2f5d79_061q.webp","a":"2f5d79_061a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"d0a773_040","src":"Circular motion MCQ #40","q":"d0a773_040q.webp","a":"d0a773_040a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"d0a773_094","src":"Circular motion MCQ #94","q":"d0a773_094q.webp","a":"d0a773_094a.webp","opts":["A","B","C","D","E"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"058359_004","src":"WORK AND ENERGY 2 MCQ #4","q":"058359_004q.webp","a":"058359_004a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"058359_013","src":"WORK AND ENERGY 2 MCQ #13","q":"058359_013q.webp","a":"058359_013a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"058359_014","src":"WORK AND ENERGY 2 MCQ #14","q":"058359_014q.webp","a":"058359_014a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"058359_018","src":"WORK AND ENERGY 2 MCQ #18","q":"058359_018q.webp","a":"058359_018a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"058359_023","src":"WORK AND ENERGY 2 MCQ #23","q":"058359_023q.webp","a":"058359_023a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"058359_053","src":"WORK AND ENERGY 2 MCQ #53","q":"058359_053q.webp","a":"058359_053a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"058359_056","src":"WORK AND ENERGY 2 MCQ #56","q":"058359_056q.webp","a":"058359_056a.webp","opts":["A","B","C","D","E"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"058359_067","src":"WORK AND ENERGY 2 MCQ #67","q":"058359_067q.webp","a":"058359_067a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"058359_070","src":"WORK AND ENERGY 2 MCQ #70","q":"058359_070q.webp","a":"058359_070a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":"f76735_025s","items":[{"id":"f76735_026","src":"WORK AND ENERGY 1 MCQ #26","q":"f76735_026q.webp","a":"f76735_026a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"f76735_043","src":"WORK AND ENERGY 1 MCQ #43","q":"f76735_043q.webp","a":"f76735_043a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"f76735_052","src":"WORK AND ENERGY 1 MCQ #52","q":"f76735_052q.webp","a":"f76735_052a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_001","src":"ROTATION 2 MCQ #1","q":"dfa710_001q.webp","a":"dfa710_001a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_003","src":"ROTATION 2 MCQ #3","q":"dfa710_003q.webp","a":"dfa710_003a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_004","src":"ROTATION 2 MCQ #4","q":"dfa710_004q.webp","a":"dfa710_004a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_005","src":"ROTATION 2 MCQ #5","q":"dfa710_005q.webp","a":"dfa710_005a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_006","src":"ROTATION 2 MCQ #6","q":"dfa710_006q.webp","a":"dfa710_006a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_007","src":"ROTATION 2 MCQ #7","q":"dfa710_007q.webp","a":"dfa710_007a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_008","src":"ROTATION 2 MCQ #8","q":"dfa710_008q.webp","a":"dfa710_008a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_009","src":"ROTATION 2 MCQ #9","q":"dfa710_009q.webp","a":"dfa710_009a.webp","opts":["A","B","C","D"],"key":["B","D"],"multi":true,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_011","src":"ROTATION 2 MCQ #11","q":"dfa710_011q.webp","a":"dfa710_011a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_013","src":"ROTATION 2 MCQ #13","q":"dfa710_013q.webp","a":"dfa710_013a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_014","src":"ROTATION 2 MCQ #14","q":"dfa710_014q.webp","a":"dfa710_014a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":"dfa710_014s","items":[{"id":"dfa710_015","src":"ROTATION 2 MCQ #15","q":"dfa710_015q.webp","a":"dfa710_015a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_016","src":"ROTATION 2 MCQ #16","q":"dfa710_016q.webp","a":"dfa710_016a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_017","src":"ROTATION 2 MCQ #17","q":"dfa710_017q.webp","a":"dfa710_017a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_018","src":"ROTATION 2 MCQ #18","q":"dfa710_018q.webp","a":"dfa710_018a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_019","src":"ROTATION 2 MCQ #19","q":"dfa710_019q.webp","a":"dfa710_019a.webp","opts":["A","B","C","D"],"key":["B","C"],"multi":true,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_020","src":"ROTATION 2 MCQ #20","q":"dfa710_020q.webp","a":"dfa710_020a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_021","src":"ROTATION 2 MCQ #21","q":"dfa710_021q.webp","a":"dfa710_021a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_022","src":"ROTATION 2 MCQ #22","q":"dfa710_022q.webp","a":"dfa710_022a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_023","src":"ROTATION 2 MCQ #23","q":"dfa710_023q.webp","a":"dfa710_023a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_024","src":"ROTATION 2 MCQ #24","q":"dfa710_024q.webp","a":"dfa710_024a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_025","src":"ROTATION 2 MCQ #25","q":"dfa710_025q.webp","a":"dfa710_025a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_027","src":"ROTATION 2 MCQ #27","q":"dfa710_027q.webp","a":"dfa710_027a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_028","src":"ROTATION 2 MCQ #28","q":"dfa710_028q.webp","a":"dfa710_028a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_030","src":"ROTATION 2 MCQ #30","q":"dfa710_030q.webp","a":"dfa710_030a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_031","src":"ROTATION 2 MCQ #31","q":"dfa710_031q.webp","a":"dfa710_031a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_032","src":"ROTATION 2 MCQ #32","q":"dfa710_032q.webp","a":"dfa710_032a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_033","src":"ROTATION 2 MCQ #33","q":"dfa710_033q.webp","a":"dfa710_033a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_034","src":"ROTATION 2 MCQ #34","q":"dfa710_034q.webp","a":"dfa710_034a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_036","src":"ROTATION 2 MCQ #36","q":"dfa710_036q.webp","a":"dfa710_036a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_037","src":"ROTATION 2 MCQ #37","q":"dfa710_037q.webp","a":"dfa710_037a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_038","src":"ROTATION 2 MCQ #38","q":"dfa710_038q.webp","a":"dfa710_038a.webp","opts":["A","B","C","D"],"key":["B","D"],"multi":true,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_039","src":"ROTATION 2 MCQ #39","q":"dfa710_039q.webp","a":"dfa710_039a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_040","src":"ROTATION 2 MCQ #40","q":"dfa710_040q.webp","a":"dfa710_040a.webp","opts":["A","B","C","D"],"key":["A","D"],"multi":true,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_041","src":"ROTATION 2 MCQ #41","q":"dfa710_041q.webp","a":"dfa710_041a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_042","src":"ROTATION 2 MCQ #42","q":"dfa710_042q.webp","a":"dfa710_042a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_043","src":"ROTATION 2 MCQ #43","q":"dfa710_043q.webp","a":"dfa710_043a.webp","opts":["A","B","C","D"],"key":["B","D"],"multi":true,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_044","src":"ROTATION 2 MCQ #44","q":"dfa710_044q.webp","a":"dfa710_044a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_045","src":"ROTATION 2 MCQ #45","q":"dfa710_045q.webp","a":"dfa710_045a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_046","src":"ROTATION 2 MCQ #46","q":"dfa710_046q.webp","a":"dfa710_046a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_048","src":"ROTATION 2 MCQ #48","q":"dfa710_048q.webp","a":"dfa710_048a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_049","src":"ROTATION 2 MCQ #49","q":"dfa710_049q.webp","a":"dfa710_049a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_050","src":"ROTATION 2 MCQ #50","q":"dfa710_050q.webp","a":"dfa710_050a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_051","src":"ROTATION 2 MCQ #51","q":"dfa710_051q.webp","a":"dfa710_051a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_052","src":"ROTATION 2 MCQ #52","q":"dfa710_052q.webp","a":"dfa710_052a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_053","src":"ROTATION 2 MCQ #53","q":"dfa710_053q.webp","a":"dfa710_053a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"dfa710_054","src":"ROTATION 2 MCQ #54","q":"dfa710_054q.webp","a":"dfa710_054a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":"fc7a86_006s","items":[{"id":"fc7a86_007","src":"IMPULESANDMOMENTUM2MCQ #7","q":"fc7a86_007q.webp","a":"fc7a86_007a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]}],"frq":[{"stem":null,"items":[{"id":"1c9929_020","src":"2.2 FRB FRQ #20","q":"1c9929_020q.webp","a":"1c9929_020a.webp","opts":[],"key":[],"multi":false,"pts":12}]},{"stem":null,"items":[{"id":"1c9929_036","src":"2.2 FRB FRQ #36","q":"1c9929_036q.webp","a":"1c9929_036a.webp","opts":[],"key":[],"multi":false,"pts":7}]},{"stem":null,"items":[{"id":"692475_015","src":"1.3 FRQ MR #15","q":"692475_015q.webp","a":"692475_015a.webp","opts":[],"key":[],"multi":false,"pts":7}]},{"stem":null,"items":[{"id":"692475_024","src":"1.3 FRQ MR #24","q":"692475_024q.webp","a":"692475_024a.webp","opts":[],"key":[],"multi":false,"pts":10}]},{"stem":null,"items":[{"id":"4370a9_029","src":"WORK AND ENERGY QQT #29","q":"4370a9_029q.webp","a":"4370a9_029a.webp","opts":[],"key":[],"multi":false,"pts":15}]},{"stem":null,"items":[{"id":"929173_001","src":"IMPULESANDMOMENTUM SHORT Q #1","q":"929173_001q.webp","a":"929173_001a.webp","opts":[],"key":[],"multi":false,"pts":10}]},{"stem":null,"items":[{"id":"929173_002","src":"IMPULESANDMOMENTUM SHORT Q #2","q":"929173_002q.webp","a":"929173_002a.webp","opts":[],"key":[],"multi":false,"pts":10}]},{"stem":null,"items":[{"id":"2f5d79_020","src":"ROTATION 1 MCQ #20","q":"2f5d79_020q.webp","a":"2f5d79_020a.webp","opts":[],"key":[],"multi":false,"pts":7}]},{"stem":null,"items":[{"id":"2f5d79_041","src":"ROTATION 1 MCQ #41","q":"2f5d79_041q.webp","a":"2f5d79_041a.webp","opts":[],"key":[],"multi":false,"pts":7}]},{"stem":null,"items":[{"id":"2f5d79_043","src":"ROTATION 1 MCQ #43","q":"2f5d79_043q.webp","a":"2f5d79_043a.webp","opts":[],"key":[],"multi":false,"pts":7}]},{"stem":null,"items":[{"id":"c68906_003","src":"ROTATION 2 LAB+QQT #3","q":"c68906_003q.webp","a":"c68906_003a.webp","opts":[],"key":[],"multi":false,"pts":12}]},{"stem":null,"items":[{"id":"c68906_008","src":"ROTATION 2 LAB+QQT #8","q":"c68906_008q.webp","a":"c68906_008a.webp","opts":[],"key":[],"multi":false,"pts":12}]},{"stem":null,"items":[{"id":"18764d_002","src":"ROTATION 2 SHORT Q #2","q":"18764d_002q.webp","a":"18764d_002a.webp","opts":[],"key":[],"multi":false,"pts":10}]},{"stem":null,"items":[{"id":"18764d_004","src":"ROTATION 2 SHORT Q #4","q":"18764d_004q.webp","a":"18764d_004a.webp","opts":[],"key":[],"multi":false,"pts":9}]},{"stem":null,"items":[{"id":"74f29a_005","src":"NEWTONSLAW2 LAB FRQ #5","q":"74f29a_005q.webp","a":"74f29a_005a.webp","opts":[],"key":[],"multi":false,"pts":7}]}],"stems":{"f76735_025s":"f76735_025s.webp","dfa710_014s":"dfa710_014s.webp","fc7a86_006s":"fc7a86_006s.webp"}};
-const IMG = f => 'img/' + f;
+const IMG = f => f.startsWith('unit') ? '../' + f : 'img/' + f;
+const UNITNUM = 6;
+const ROOT = f => f.startsWith('unit') ? f : 'unit' + UNITNUM + '/img/' + f;
+const stemImg = q => q.stemImg || (q.stem ? BANK.stems[q.stem] : null);
 const $ = id => document.getElementById(id);
 const store = {get(k, d){try{const v = localStorage.getItem(k);return v ? JSON.parse(v) : d}catch(e){return d}},
                set(k, v){try{localStorage.setItem(k, JSON.stringify(v))}catch(e){}}, del(k){try{localStorage.removeItem(k)}catch(e){}}};
@@ -280,7 +308,7 @@ $('resume').onclick = () => { S = store.get('ap1u6-state', null); if (S) enterEx
 
 // ---------- exam ----------
 const idxSec = sec => S.qs.map((q, i) => [q, i]).filter(([q]) => (q.t === 'mcq') === (sec === 'M')).map(([, i]) => i);
-function show(v){ ['vSetup', 'vExam', 'vRes'].forEach(x => $(x).classList.toggle('hide', x !== v)); window.scrollTo(0, 0); }
+function show(v){ ['vSetup', 'vExam', 'vRes', 'vBook'].forEach(x => $(x).classList.toggle('hide', x !== v)); window.scrollTo(0, 0); }
 function enterExam(){
   S.peek = S.peek || {};
   if (S.allowPeek === undefined) S.allowPeek = true;
@@ -308,7 +336,7 @@ function render(){
   $('secName').textContent = S.sec === 'M' ? 'Section I · 选择题' : 'Section II · FRQ';
   $('prog').textContent = `第 ${pos + 1} / ${ids.length} 题`;
   $('toFRQ').classList.toggle('hide', !(S.sec === 'M' && idxSec('F').length));
-  const stem = q.stem ? `<div class="stem"><span class="stemtag">本题组共用的情境</span>${img(BANK.stems[q.stem], '情境')}</div>` : '';
+  const stem = stemImg(q) ? `<div class="stem"><span class="stemtag">本题组共用的情境</span>${img(stemImg(q), '情境')}</div>` : '';
   $('qPage').innerHTML = `${stem.replace('lazy', 'eager')}${img(q.q, '题目').replace('lazy', 'eager')}<p style="font-size:12px;color:#8a857e;margin:10px 0 0">出处：${q.src}${q.t === 'frq' ? ` · 满分 ${q.pts} 分` : ''}</p>`;
   if (q.t === 'mcq') {
     const sel = S.ans[q.id] || [];
@@ -377,7 +405,9 @@ function finish(){
   clearInterval(tick); S.phase = 'done';
   const sn = seen(); S.qs.forEach(q => sn[q.id] = (sn[q.id] || 0) + 1); store.set('ap1u6-seen', sn);
   store.del('ap1u6-state'); store.set('ap1u6-last', S);
+  const nw = S.qs.filter(q => q.t === 'mcq').map(q => bookLog(q, right(q) ? 'c' : 'w')).filter(r => r === 'w').length;
   showRes();
+  if (nw) toast(`${nw} 道错题已记入错题本`);
 }
 function totals(){
   const M = S.qs.filter(q => q.t === 'mcq'), F = S.qs.filter(q => q.t === 'frq');
@@ -412,7 +442,7 @@ function renderReview(){
   if (revFilter === 'frq') list = list.filter(([q]) => q.t === 'frq');
   const nM = q => idxSec(q.t === 'mcq' ? 'M' : 'F').indexOf(S.qs.indexOf(q)) + 1;
   $('review').innerHTML = list.length ? list.map(([q]) => {
-    const stem = q.stem ? `<div class="lbl">共用情境</div><div class="page">${img(BANK.stems[q.stem], '情境')}</div>` : '';
+    const stem = stemImg(q) ? `<div class="lbl">共用情境</div><div class="page">${img(stemImg(q), '情境')}</div>` : '';
     if (q.t === 'mcq') {
       const a = (S.ans[q.id] || []).join('、') || '未作答', ok = right(q);
       return `<details class="rv"><summary><strong>选择题 ${nM(q)}</strong><span class="tag ${ok ? 'ok' : 'bad'}">${ok ? '正确' : '错误'}</span><span>你的答案：<b>${a}</b></span><span>正确答案：<b>${q.key.join('、')}</b></span>${S.flag[q.id] ? '<span class="tag na">已标记</span>' : ''}${S.peek && S.peek[q.id] ? '<span class="tag na">作答中看过答案</span>' : ''}<span class="mut" style="font-size:13px">${q.src}</span></summary>
@@ -428,7 +458,7 @@ function renderReview(){
   $('review').querySelectorAll('.mine').forEach((el, k) => { const q = list.filter(([x]) => x.t === 'frq' && S.ans[x.id])[k]; if (q) el.textContent = S.ans[q[0].id]; });
   $('review').querySelectorAll('.selfscore input').forEach(inp => inp.oninput = () => {
     const q = S.qs.find(x => x.id === inp.dataset.id); let v = inp.value === '' ? '' : Math.max(0, Math.min(q.pts, Math.round(+inp.value)));
-    S.self[q.id] = v; const tag = inp.closest('.rv').querySelector('.tag'); tag.className = 'tag ' + (v === '' ? 'na' : 'ok'); tag.textContent = v === '' ? '待自评' : `自评 ${v}/${q.pts}`; paintScore();
+    S.self[q.id] = v; if (v !== '') bookLog(q, v >= q.pts ? 'c' : 'w'); const tag = inp.closest('.rv').querySelector('.tag'); tag.className = 'tag ' + (v === '' ? 'na' : 'ok'); tag.textContent = v === '' ? '待自评' : `自评 ${v}/${q.pts}`; paintScore();
   });
 }
 $('filters').querySelectorAll('button').forEach(b => b.onclick = () => { revFilter = b.dataset.f; $('filters').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); renderReview(); });
@@ -448,6 +478,99 @@ $('copy').onclick = async () => {
   try { await navigator.clipboard.writeText(txt); toast('已复制，可直接粘贴发送'); } catch (e) { toast('无法访问剪贴板，请手动选中复制'); }
 };
 document.addEventListener('click', e => { if (e.target.tagName === 'IMG' && e.target.closest('.page')) e.target.closest('.page').classList.toggle('zoom'); });
+
+// ---------- wrong book ----------
+const BK = 'ap1-wrongbook';
+const bookGet = () => store.get(BK, {});
+const bookSet = b => store.set(BK, b);
+function stats(e){
+  const h = e.hist || []; let streak = 0;
+  for (let i = h.length - 1; i >= 0 && h[i].r === 'c'; i--) streak++;
+  return {wrong: h.filter(x => x.r === 'w').length, streak, mastered: streak >= 2, last: h.length ? h[h.length - 1].d : ''};
+}
+function bookLog(q, r){
+  const b = bookGet(); let e = b[q.id];
+  if (!e && r === 'c') return r;
+  if (!e) e = b[q.id] = {id: q.id, u: q.u || UNITNUM, t: q.t, src: q.src, q: ROOT(q.q), a: ROOT(q.a), stem: q.stem || null,
+    stemImg: stemImg(q) ? ROOT(stemImg(q)) : null, opts: q.opts, key: q.key, multi: q.multi, pts: q.pts, hist: []};
+  const sid = S.started, d = new Date().toISOString().slice(0, 10);
+  const ans = q.t === 'mcq' ? (S.ans[q.id] || []).join('') : (S.self[q.id] ?? '');
+  const i = e.hist.findIndex(x => x.s === sid);
+  const rec = {s: sid, r, d, ans};
+  if (i >= 0) e.hist[i] = rec; else e.hist.push(rec);
+  if (!e.hist.some(x => x.r === 'w')) delete b[q.id];
+  bookSet(b); paintBookMeta(); return r;
+}
+function bookActive(u){ return Object.values(bookGet()).filter(e => !stats(e).mastered && (!u || e.u == u)); }
+function paintBookMeta(){
+  const all = bookActive(), mine = UNITNUM ? bookActive(UNITNUM).length : all.length;
+  const total = Object.keys(bookGet()).length;
+  $('bkMeta').textContent = all.length ? (UNITNUM ? `本单元 ${mine} 道待复习，全部单元共 ${all.length} 道` : `共 ${all.length} 道待复习`) : (total ? `全部已掌握（共 ${total} 道）` : '还没有错题');
+}
+function bookList(){
+  const u = $('bkUnit').value, showM = $('bkShowM').checked;
+  return Object.values(bookGet()).filter(e => (!u || e.u == u) && (showM || !stats(e).mastered))
+    .sort((a, b) => a.u - b.u || stats(b).wrong - stats(a).wrong || a.src.localeCompare(b.src));
+}
+function renderBook(){
+  const list = bookList();
+  $('bkRedo').disabled = !list.filter(e => !stats(e).mastered).length;
+  $('bkList').innerHTML = list.length ? list.map(e => {
+    const st = stats(e), lastW = [...e.hist].reverse().find(x => x.r === 'w');
+    const your = e.t === 'mcq' ? (lastW && lastW.ans ? lastW.ans.split('').join('、') : '未作答') : (lastW ? `自评 ${lastW.ans}/${e.pts}` : '');
+    return `<details class="rv"><summary><strong>Unit ${e.u}</strong><span class="tag ${st.mastered ? 'ok' : 'bad'}">${st.mastered ? '已掌握' : '待复习'}</span>
+      <span>${e.t === 'mcq' ? '选择题' : 'FRQ'} · 错 ${st.wrong} 次</span><span title="连续做对两次即掌握">连续做对 <span class="streak"><i class="${st.streak >= 1 ? 'on' : ''}"></i><i class="${st.streak >= 2 ? 'on' : ''}"></i></span></span>
+      <span class="mut" style="font-size:13px">${e.src} · 最近 ${st.last}</span></summary>
+      <div class="rvbody">${e.stemImg ? `<div class="lbl">共用情境</div><div class="page">${img(e.stemImg, '情境')}</div>` : ''}
+      <div class="lbl">题目</div><div class="page">${img(e.q, '题目')}</div>
+      <div class="lbl">最近一次做错时：${your}${e.t === 'mcq' ? ` · 正确答案：${e.key.join('、')}` : ''}</div>
+      <div class="lbl">${e.t === 'mcq' ? '答案与解析' : '评分标准'}</div><div class="page">${img(e.a, '答案')}</div>
+      <div><button data-del="${e.id}">从错题本删除</button></div></div></details>`;
+  }).join('') : '<p class="mut">这里还没有题目。</p>';
+  $('bkList').querySelectorAll('[data-del]').forEach(btn => btn.onclick = async () => {
+    if (await ask('从错题本删除这道题？')) { const b = bookGet(); delete b[btn.dataset.del]; bookSet(b); renderBook(); paintBookMeta(); }
+  });
+}
+let bookFrom = 'vSetup';
+function openBook(from){
+  bookFrom = from;
+  const units = [...new Set(Object.values(bookGet()).map(e => e.u))].sort();
+  $('bkUnit').innerHTML = '<option value="">全部单元</option>' + units.map(u => `<option value="${u}">Unit ${u}</option>`).join('');
+  if (UNITNUM && units.includes(UNITNUM)) $('bkUnit').value = UNITNUM;
+  show('vBook'); renderBook();
+}
+$('openBook').onclick = () => openBook('vSetup');
+$('toBook').onclick = () => openBook('vRes');
+$('bkBack').onclick = e => { e.preventDefault(); show(bookFrom); paintBookMeta(); };
+$('bkUnit').onchange = renderBook; $('bkShowM').onchange = renderBook;
+$('bkRedo').onclick = () => {
+  const es = bookList().filter(e => !stats(e).mastered);
+  const toQ = e => ({id: e.id, u: e.u, src: e.src, q: e.q, a: e.a, opts: e.opts, key: e.key, multi: e.multi, pts: e.pts, stem: e.stem, stemImg: e.stemImg});
+  const sortStem = arr => arr.sort((a, b) => (a.stem || a.id).localeCompare(b.stem || b.id));
+  begin(sortStem(es.filter(e => e.t === 'mcq').map(toQ)), es.filter(e => e.t === 'frq').map(toQ));
+};
+$('bkExport').onclick = () => {
+  const blob = new Blob([JSON.stringify({kind: 'ap1-wrongbook', v: 1, at: new Date().toISOString(), book: bookGet()})], {type: 'application/json'});
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `AP物理1错题本_${new Date().toISOString().slice(0, 10)}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+};
+$('bkImportBtn').onclick = () => $('bkImport').click();
+$('bkImport').onchange = async () => {
+  const f = $('bkImport').files[0]; if (!f) return;
+  try {
+    const data = JSON.parse(await f.text()); if (data.kind !== 'ap1-wrongbook') throw new Error('not a wrong book');
+    const b = bookGet(); let added = 0;
+    Object.values(data.book).forEach(e => {
+      if (!b[e.id]) { b[e.id] = e; added++; return; }
+      const have = new Set(b[e.id].hist.map(x => x.s + x.r));
+      e.hist.forEach(x => { if (!have.has(x.s + x.r)) b[e.id].hist.push(x); });
+      b[e.id].hist.sort((x, y) => x.s - y.s);
+    });
+    bookSet(b); toast(`已导入，新增 ${added} 道`); openBook(bookFrom);
+  } catch (err) { toast('文件无法识别，请选择导出的错题本文件'); }
+  $('bkImport').value = '';
+};
+paintBookMeta();
 function toast(m){ const t = $('toast'); t.textContent = m; t.classList.remove('hide'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('hide'), 2600); }
 }
 </script>
