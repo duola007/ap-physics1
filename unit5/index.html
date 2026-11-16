@@ -293,7 +293,7 @@ function render(){
   $('prog').textContent = `第 ${pos + 1} / ${ids.length} 题`;
   $('toFRQ').classList.toggle('hide', !(S.sec === 'M' && idxSec('F').length));
   const stem = q.stem ? `<div class="stem"><span class="stemtag">本题组共用的情境</span>${img(BANK.stems[q.stem], '情境')}</div>` : '';
-  $('qPage').innerHTML = `${stem}${img(q.q, '题目')}<p style="font-size:12px;color:#8a857e;margin:10px 0 0">出处：${q.src}${q.t === 'frq' ? ` · 满分 ${q.pts} 分` : ''}</p>`;
+  $('qPage').innerHTML = `${stem.replace('lazy', 'eager')}${img(q.q, '题目').replace('lazy', 'eager')}<p style="font-size:12px;color:#8a857e;margin:10px 0 0">出处：${q.src}${q.t === 'frq' ? ` · 满分 ${q.pts} 分` : ''}</p>`;
   if (q.t === 'mcq') {
     const sel = S.ans[q.id] || [];
     $('ansArea').innerHTML = `<div class="choices ${q.multi ? 'multi' : ''}" role="group" aria-label="选择答案">${q.opts.map(o => `<button class="bub" data-o="${o}" aria-pressed="${sel.includes(o)}">${o}</button>`).join('')}</div>
