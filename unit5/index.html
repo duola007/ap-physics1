@@ -274,6 +274,7 @@ const idxSec = sec => S.qs.map((q, i) => [q, i]).filter(([q]) => (q.t === 'mcq')
 function show(v){ ['vSetup', 'vExam', 'vRes'].forEach(x => $(x).classList.toggle('hide', x !== v)); window.scrollTo(0, 0); }
 function enterExam(){
   S.peek = S.peek || {};
+  if (S.allowPeek === undefined) S.allowPeek = true;
   show('vExam');
   const iM = idxSec('M'), iF = idxSec('F');
   if (S.sec === 'F' && !iF.includes(S.cur)) S.cur = iF[0];
