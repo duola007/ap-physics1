@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>AP Physics 1 · Unit 1 测评</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;600;800&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a quiet exam room — focused, nothing competes with the question.
+   IDEA: the AP answer sheet: salmon-ruled bubble grid beside a printed test booklet page.
+   PICTURE: the question page itself on white paper; the bubble sheet is the navigator.
+   COLOUR and TYPE: paper white / graphite ink, answer-sheet salmon rules, pencil-filled bubbles; Public Sans + Noto Sans SC.
+   LAYOUT: booklet page left, bubble sheet right; stacks to page then sheet under 860px. */
+:root{color-scheme:light dark;
+ --bg:light-dark(#f3f1ee,#15171a);--panel:light-dark(#ffffff,#1d2024);--ink:light-dark(#17191c,#e9e7e3);--mut:light-dark(#62666d,#a3a7ad);
+ --rule:light-dark(#efc3b6,#5a3a33);--sheet:light-dark(#fff7f4,#221d1c);--salmon:light-dark(#d8664a,#ef8f75);
+ --fill:light-dark(#23262b,#f1efea);--ok:light-dark(#17824f,#4cc58a);--bad:light-dark(#c23b2c,#ff7b6b);--flag:light-dark(#b7791f,#f0b44c);
+ --line:light-dark(#dedad4,#33373d)}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 "Public Sans","Noto Sans SC",system-ui,sans-serif;overflow-x:clip}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:1px solid var(--line);background:var(--panel);border-radius:10px;padding:10px 16px;min-height:44px}
+button:focus-visible,input:focus-visible,textarea:focus-visible{outline:3px solid var(--salmon);outline-offset:2px}
+button.pri{background:var(--fill);color:var(--bg);border-color:var(--fill);font-weight:600}
+button:disabled{opacity:.45;cursor:default}
+h1{font-size:clamp(30px,4.4vw,46px);line-height:1.05;margin:0 0 10px;font-weight:800;text-wrap:balance;letter-spacing:-.01em}
+h2{font-size:22px;margin:0 0 12px}
+.mut{color:var(--mut)}
+.wrap{max-width:1240px;margin:0 auto;padding:clamp(18px,3vw,40px) max(4vw,14px)}
+.hide{display:none!important}
+/* setup */
+.setup{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,.9fr);gap:clamp(20px,4vw,56px);align-items:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:clamp(18px,2.6vw,28px)}
+.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.field{margin:18px 0}
+.field label{display:block;font-weight:600;margin-bottom:6px}
+input[type=range]{width:100%;accent-color:var(--salmon);height:28px}
+.big{font-size:clamp(34px,5vw,52px);font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.seg button{border:0;border-radius:0;min-width:110px}
+.seg button[aria-pressed=true]{background:var(--fill);color:var(--bg)}
+.sheetart{background:var(--sheet);border:2px solid var(--rule);border-radius:14px;padding:18px 18px 10px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 22px}
+.sheetart div{display:flex;gap:7px;align-items:center;font-size:13px;color:var(--salmon);font-variant-numeric:tabular-nums}
+.sheetart b{width:22px;text-align:right;font-weight:600}
+.sheetart i{width:17px;height:17px;border-radius:50%;border:1.5px solid var(--salmon);display:inline-block}
+.sheetart i.f{background:var(--fill);border-color:var(--fill)}
+.stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:16px}
+.stats div{border-top:2px solid var(--rule);padding-top:8px}
+.stats strong{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+/* exam */
+.bar{position:sticky;top:0;z-index:5;background:var(--panel);border-bottom:1px solid var(--line)}
+.bar .wrap{padding-block:10px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.timer{font:700 22px/1 "Public Sans",sans-serif;font-variant-numeric:tabular-nums;padding:8px 12px;border-radius:10px;background:var(--sheet);border:1px solid var(--rule)}
+.timer.low{color:var(--bad);border-color:var(--bad)}
+.grow{flex:1}
+.exam{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:24px;align-items:start}
+.page{background:#fff;color:#111;border-radius:6px;box-shadow:0 1px 2px rgba(0,0,0,.08),0 8px 24px rgba(0,0,0,.08);padding:clamp(12px,2.4vw,28px)}
+.page img{display:block;width:100%;height:auto;cursor:zoom-in}
+.page.zoom{overflow-x:auto}.page.zoom img{width:200%;max-width:none;cursor:zoom-out}
+.rvbody .page{max-width:860px}
+.zhint{display:none;font-size:13px;color:var(--mut);margin:6px 0 0}
+@media(max-width:700px){.zhint{display:block}}
+.stem{border-bottom:1px dashed #c9c4bd;padding-bottom:12px;margin-bottom:14px}
+.stemtag{font-size:13px;color:#7a5146;background:#fbe9e3;display:inline-block;padding:2px 8px;border-radius:6px;margin-bottom:8px}
+.qhead{display:flex;justify-content:space-between;gap:10px;align-items:center;margin-bottom:12px}
+.choices{display:flex;gap:12px;flex-wrap:wrap;margin:18px 0 6px}
+.bub{width:56px;height:56px;border-radius:50%;border:2px solid var(--salmon);background:var(--sheet);font-weight:700;font-size:18px;color:var(--salmon);padding:0}
+.bub[aria-pressed=true]{background:var(--fill);border-color:var(--fill);color:var(--bg)}
+.multi .bub{border-radius:12px}
+.navrow{display:flex;gap:10px;justify-content:space-between;margin-top:16px;flex-wrap:wrap}
+.side{position:sticky;top:76px;background:var(--sheet);border:2px solid var(--rule);border-radius:14px;padding:14px}
+.grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin:10px 0}
+.cell{min-height:40px;padding:0;border-radius:8px;border:1.5px solid var(--rule);background:transparent;font-size:14px;font-variant-numeric:tabular-nums;position:relative}
+.cell.ans{background:var(--fill);color:var(--bg);border-color:var(--fill)}
+.cell.cur{outline:3px solid var(--salmon);outline-offset:1px}
+.cell.flg::after{content:"";position:absolute;top:3px;right:3px;width:7px;height:7px;border-radius:50%;background:var(--flag)}
+.legend{font-size:13px;color:var(--mut);display:flex;gap:12px;flex-wrap:wrap}
+textarea{width:100%;min-height:180px;border:1px solid var(--line);border-radius:10px;padding:12px;background:var(--panel);font-size:16px}
+/* results */
+.score{display:grid;grid-template-columns:minmax(0,1.2fr) repeat(2,minmax(0,1fr));gap:14px}
+.meter{height:12px;background:var(--line);border-radius:6px;overflow:hidden;margin-top:10px}
+.meter i{display:block;height:100%;background:var(--ok)}
+.topics{margin-top:8px}
+.topics div{display:grid;grid-template-columns:140px minmax(0,1fr) 70px;gap:10px;align-items:center;font-size:14px;padding:4px 0}
+.topics span:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.rv{border:1px solid var(--line);border-radius:14px;background:var(--panel);margin:12px 0;overflow:hidden}
+.rv summary{list-style:none;cursor:pointer;padding:14px 16px;display:flex;gap:12px;align-items:center;flex-wrap:wrap;min-height:44px}
+.rv summary::-webkit-details-marker{display:none}
+.tag{font-size:13px;font-weight:700;padding:3px 9px;border-radius:999px;white-space:nowrap}
+.tag.ok{background:color-mix(in srgb,var(--ok) 15%,transparent);color:var(--ok)}
+.tag.bad{background:color-mix(in srgb,var(--bad) 15%,transparent);color:var(--bad)}
+.tag.na{background:color-mix(in srgb,var(--flag) 18%,transparent);color:var(--flag)}
+.rvbody{padding:0 16px 16px;display:grid;gap:12px}
+.lbl{font-size:13px;font-weight:700;color:var(--mut);margin:6px 0 -4px}
+.selfscore{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--sheet);border:1px solid var(--rule);border-radius:12px;padding:12px}
+.selfscore input{width:90px;min-height:44px;border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:18px;background:var(--panel)}
+.mine{white-space:pre-wrap;background:var(--sheet);border:1px solid var(--line);border-radius:10px;padding:10px;font-size:15px}
+.filters{display:flex;gap:8px;flex-wrap:wrap}
+.filters button[aria-pressed=true]{background:var(--fill);color:var(--bg)}
+dialog{border:1px solid var(--line);border-radius:16px;background:var(--panel);color:var(--ink);max-width:440px;width:calc(100% - 32px);padding:22px}
+dialog::backdrop{background:rgba(0,0,0,.45)}
+.toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--fill);color:var(--bg);padding:10px 16px;border-radius:10px;font-size:14px;transition:opacity .2s}
+@media(max-width:860px){.setup,.exam{grid-template-columns:minmax(0,1fr)}.side{position:static}.score{grid-template-columns:minmax(0,1fr)}}
+@media(max-width:600px){.bub{width:50px;height:50px}.topics div{grid-template-columns:90px minmax(0,1fr) 60px}.seg button{min-width:0}}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<!-- SETUP -->
+<section id="vSetup" class="wrap">
+  <div class="setup">
+    <div>
+      <p class="mut" style="margin:0 0 6px"><a href="../" style="color:inherit">← 全部单元</a> · AP Physics 1 · Unit 1 Kinematics</p>
+      <h1>运动学单元测评</h1>
+      <p style="max-width:60ch">题目来自课堂题库，按 AP 考试的形式作答：选择题限时、自动批改；简答题（FRQ）在纸上作答，提交后对照官方评分标准自评。交卷后可逐题查看标准答案和解析。</p>
+      <div class="card">
+        <div class="field">
+          <label for="nM">选择题数量 <span class="mut" id="nMmax"></span></label>
+          <div class="row"><input id="nM" type="range" min="0" max="42" value="20" class="grow"><span class="big" id="nMv">20</span></div>
+        </div>
+        <div class="field">
+          <label for="nF">简答题（FRQ）数量 <span class="mut" id="nFmax"></span></label>
+          <div class="row"><input id="nF" type="range" min="0" max="4" value="1" class="grow"><span class="big" id="nFv">1</span></div>
+        </div>
+        <div class="field">
+          <label>计时</label>
+          <div class="seg" role="group" aria-label="计时方式">
+            <button id="tAP" aria-pressed="true">AP 标准节奏</button><button id="tOff" aria-pressed="false">不计时</button>
+          </div>
+          <p class="mut" id="tNote" style="margin:8px 0 0;font-size:14px"></p>
+        </div>
+        <div class="field">
+          <label for="who">姓名（可选，会出现在成绩摘要里）</label>
+          <input id="who" style="width:100%;min-height:44px;border:1px solid var(--line);border-radius:10px;padding:8px 12px;background:var(--panel)" maxlength="30">
+        </div>
+        <div class="row">
+          <button class="pri" id="start">开始测评</button>
+          <button id="resume" class="hide">继续上次未完成的测评</button>
+          <label class="row mut" style="font-size:14px;gap:6px"><input type="checkbox" id="fresh" checked> 优先抽没做过的题</label>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="sheetart" aria-hidden="true" id="art"></div>
+      <div class="stats">
+        <div><strong id="sM"></strong><span class="mut">道选择题</span></div>
+        <div><strong id="sF"></strong><span class="mut">道 FRQ</span></div>
+        <div><strong id="sDone">0</strong><span class="mut">道已做过（本设备）</span></div>
+      </div>
+      <p class="mut" style="font-size:14px;margin-top:14px">AP Physics 1 正式考试：Section I 选择题 42 道 / 85 分钟，Section II FRQ 4 道 / 95 分钟，各占 50%。“AP 标准节奏”按同样的每题用时给你计时。每道题下方都标了出处，方便核对原卷。</p>
+    </div>
+  </div>
+</section>
+
+<!-- EXAM -->
+<section id="vExam" class="hide">
+  <div class="bar"><div class="wrap">
+    <strong id="secName"></strong><span class="mut" id="prog"></span><span class="grow"></span>
+    <span class="timer" id="timer" aria-live="off"></span>
+    <button id="toFRQ" class="hide">进入 Section II</button>
+    <button class="pri" id="submit">交卷</button>
+  </div></div>
+  <div class="wrap exam">
+    <div>
+      <div class="page" id="qPage"></div>
+      <p class="zhint">字太小？点题目图片放大，可左右滑动；再点一次还原。</p>
+      <div id="ansArea"></div>
+      <div class="navrow">
+        <button id="prev">← 上一题</button>
+        <button id="flag">标记待检查</button>
+        <button id="next">下一题 →</button>
+      </div>
+    </div>
+    <aside class="side">
+      <strong>答题卡</strong>
+      <div class="grid" id="gridM"></div>
+      <div id="gridFwrap"><strong style="font-size:14px">Section II</strong><div class="grid" id="gridF"></div></div>
+      <div class="legend"><span>■ 已作答</span><span style="color:var(--flag)">● 已标记</span><span>键盘 A–E 选择，←/→ 翻页</span></div>
+    </aside>
+  </div>
+</section>
+
+<!-- RESULTS -->
+<section id="vRes" class="wrap hide">
+  <p class="mut" style="margin:0 0 6px" id="resWho"></p>
+  <h1 id="resTitle"></h1>
+  <div class="score">
+    <div class="card"><span class="mut">综合得分</span><div class="big" id="rTotal"></div><div class="meter"><i id="rTotalBar"></i></div><p class="mut" id="rNote" style="font-size:14px;margin:10px 0 0"></p></div>
+    <div class="card"><span class="mut">Section I 选择题</span><div class="big" id="rM"></div><p class="mut" id="rMt" style="margin:8px 0 0;font-size:14px"></p></div>
+    <div class="card"><span class="mut">Section II FRQ（自评）</span><div class="big" id="rF"></div><p class="mut" id="rFt" style="margin:8px 0 0;font-size:14px"></p></div>
+  </div>
+  <div class="card" style="margin-top:14px" id="topicCard"><strong>按知识点（选择题）</strong><div class="topics" id="topics"></div></div>
+  <div class="row" style="margin:18px 0">
+    <button class="pri" id="again">再来一套</button>
+    <button id="wrongOnly">只重做错题</button>
+    <button id="copy">复制成绩摘要</button>
+    <button id="home">回到设置</button>
+  </div>
+  <div class="row" style="justify-content:space-between">
+    <h2 style="margin:0">逐题对照</h2>
+    <div class="filters" id="filters">
+      <button data-f="all" aria-pressed="true">全部</button><button data-f="wrong" aria-pressed="false">错题</button><button data-f="flag" aria-pressed="false">我标记的</button><button data-f="frq" aria-pressed="false">FRQ</button>
+    </div>
+  </div>
+  <div id="review"></div>
+</section>
+
+<dialog id="dlg"><p id="dlgMsg" style="margin-top:0"></p><div class="row" style="justify-content:flex-end"><button id="dlgNo">取消</button><button class="pri" id="dlgYes">确定</button></div></dialog>
+<div class="toast hide" id="toast"></div>
+
+<script>
+{
+const BANK = {"mcq":[{"stem":"40a95b_017s","items":[{"id":"40a95b_018","src":"1.3 Reperesent motion MCQ #18","q":"40a95b_018q.webp","a":"40a95b_018a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null},{"id":"40a95b_019","src":"1.3 Reperesent motion MCQ #19","q":"40a95b_019q.webp","a":"40a95b_019a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null},{"id":"40a95b_020","src":"1.3 Reperesent motion MCQ #20","q":"40a95b_020q.webp","a":"40a95b_020a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":"40a95b_020s","items":[{"id":"40a95b_021","src":"1.3 Reperesent motion MCQ #21","q":"40a95b_021q.webp","a":"40a95b_021a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null},{"id":"40a95b_022","src":"1.3 Reperesent motion MCQ #22","q":"40a95b_022q.webp","a":"40a95b_022a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":"40a95b_073s","items":[{"id":"40a95b_074","src":"1.3 Reperesent motion MCQ #74","q":"40a95b_074q.webp","a":"40a95b_074a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null},{"id":"40a95b_075","src":"1.3 Reperesent motion MCQ #75","q":"40a95b_075q.webp","a":"40a95b_075a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":"40a95b_084s","items":[{"id":"40a95b_085","src":"1.3 Reperesent motion MCQ #85","q":"40a95b_085q.webp","a":"40a95b_085a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null},{"id":"40a95b_086","src":"1.3 Reperesent motion MCQ #86","q":"40a95b_086q.webp","a":"40a95b_086a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":"2c4def_001s","items":[{"id":"2c4def_002","src":"Copy of kin mcq #2","q":"2c4def_002q.webp","a":"2c4def_002a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null},{"id":"2c4def_003","src":"Copy of kin mcq #3","q":"2c4def_003q.webp","a":"2c4def_003a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":"2c4def_051s","items":[{"id":"2c4def_052","src":"Copy of kin mcq #52","q":"2c4def_052q.webp","a":"2c4def_052a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null},{"id":"2c4def_053","src":"Copy of kin mcq #53","q":"2c4def_053q.webp","a":"2c4def_053a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_001","src":"1.3 Reperesent motion MCQ #1","q":"40a95b_001q.webp","a":"40a95b_001a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_002","src":"1.3 Reperesent motion MCQ #2","q":"40a95b_002q.webp","a":"40a95b_002a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":"40a95b_003s","items":[{"id":"40a95b_004","src":"1.3 Reperesent motion MCQ #4","q":"40a95b_004q.webp","a":"40a95b_004a.webp","opts":["A","B","C","D","E"],"key":["E"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_005","src":"1.3 Reperesent motion MCQ #5","q":"40a95b_005q.webp","a":"40a95b_005a.webp","opts":["A","B","C","D","E"],"key":["E"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_007","src":"1.3 Reperesent motion MCQ #7","q":"40a95b_007q.webp","a":"40a95b_007a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_008","src":"1.3 Reperesent motion MCQ #8","q":"40a95b_008q.webp","a":"40a95b_008a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_009","src":"1.3 Reperesent motion MCQ #9","q":"40a95b_009q.webp","a":"40a95b_009a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_010","src":"1.3 Reperesent motion MCQ #10","q":"40a95b_010q.webp","a":"40a95b_010a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_011","src":"1.3 Reperesent motion MCQ #11","q":"40a95b_011q.webp","a":"40a95b_011a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_012","src":"1.3 Reperesent motion MCQ #12","q":"40a95b_012q.webp","a":"40a95b_012a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_013","src":"1.3 Reperesent motion MCQ #13","q":"40a95b_013q.webp","a":"40a95b_013a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_015","src":"1.3 Reperesent motion MCQ #15","q":"40a95b_015q.webp","a":"40a95b_015a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_016","src":"1.3 Reperesent motion MCQ #16","q":"40a95b_016q.webp","a":"40a95b_016a.webp","opts":["A","B","C","D","E"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_017","src":"1.3 Reperesent motion MCQ #17","q":"40a95b_017q.webp","a":"40a95b_017a.webp","opts":["A","B","C","D","E"],"key":["E"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_023","src":"1.3 Reperesent motion MCQ #23","q":"40a95b_023q.webp","a":"40a95b_023a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_024","src":"1.3 Reperesent motion MCQ #24","q":"40a95b_024q.webp","a":"40a95b_024a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_026","src":"1.3 Reperesent motion MCQ #26","q":"40a95b_026q.webp","a":"40a95b_026a.webp","opts":["A","B","C","D","E"],"key":["E"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_027","src":"1.3 Reperesent motion MCQ #27","q":"40a95b_027q.webp","a":"40a95b_027a.webp","opts":["A","B","C","D","E"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_028","src":"1.3 Reperesent motion MCQ #28","q":"40a95b_028q.webp","a":"40a95b_028a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_029","src":"1.3 Reperesent motion MCQ #29","q":"40a95b_029q.webp","a":"40a95b_029a.webp","opts":["A","B","C","D","E"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_030","src":"1.3 Reperesent motion MCQ #30","q":"40a95b_030q.webp","a":"40a95b_030a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_031","src":"1.3 Reperesent motion MCQ #31","q":"40a95b_031q.webp","a":"40a95b_031a.webp","opts":["A","B","C","D","E"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_032","src":"1.3 Reperesent motion MCQ #32","q":"40a95b_032q.webp","a":"40a95b_032a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_033","src":"1.3 Reperesent motion MCQ #33","q":"40a95b_033q.webp","a":"40a95b_033a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_035","src":"1.3 Reperesent motion MCQ #35","q":"40a95b_035q.webp","a":"40a95b_035a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_036","src":"1.3 Reperesent motion MCQ #36","q":"40a95b_036q.webp","a":"40a95b_036a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_037","src":"1.3 Reperesent motion MCQ #37","q":"40a95b_037q.webp","a":"40a95b_037a.webp","opts":["A","B","C","D","E"],"key":["E"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_038","src":"1.3 Reperesent motion MCQ #38","q":"40a95b_038q.webp","a":"40a95b_038a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_040","src":"1.3 Reperesent motion MCQ #40","q":"40a95b_040q.webp","a":"40a95b_040a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_041","src":"1.3 Reperesent motion MCQ #41","q":"40a95b_041q.webp","a":"40a95b_041a.webp","opts":["A","B","C","D","E"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_042","src":"1.3 Reperesent motion MCQ #42","q":"40a95b_042q.webp","a":"40a95b_042a.webp","opts":["A","B","C","D","E"],"key":["E"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_043","src":"1.3 Reperesent motion MCQ #43","q":"40a95b_043q.webp","a":"40a95b_043a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_044","src":"1.3 Reperesent motion MCQ #44","q":"40a95b_044q.webp","a":"40a95b_044a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_045","src":"1.3 Reperesent motion MCQ #45","q":"40a95b_045q.webp","a":"40a95b_045a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_046","src":"1.3 Reperesent motion MCQ #46","q":"40a95b_046q.webp","a":"40a95b_046a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_050","src":"1.3 Reperesent motion MCQ #50","q":"40a95b_050q.webp","a":"40a95b_050a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_051","src":"1.3 Reperesent motion MCQ #51","q":"40a95b_051q.webp","a":"40a95b_051a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_052","src":"1.3 Reperesent motion MCQ #52","q":"40a95b_052q.webp","a":"40a95b_052a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_053","src":"1.3 Reperesent motion MCQ #53","q":"40a95b_053q.webp","a":"40a95b_053a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":"40a95b_053s","items":[{"id":"40a95b_054","src":"1.3 Reperesent motion MCQ #54","q":"40a95b_054q.webp","a":"40a95b_054a.webp","opts":["A","B","C","D","E"],"key":["E"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_055","src":"1.3 Reperesent motion MCQ #55","q":"40a95b_055q.webp","a":"40a95b_055a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_056","src":"1.3 Reperesent motion MCQ #56","q":"40a95b_056q.webp","a":"40a95b_056a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_057","src":"1.3 Reperesent motion MCQ #57","q":"40a95b_057q.webp","a":"40a95b_057a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_058","src":"1.3 Reperesent motion MCQ #58","q":"40a95b_058q.webp","a":"40a95b_058a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_060","src":"1.3 Reperesent motion MCQ #60","q":"40a95b_060q.webp","a":"40a95b_060a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_061","src":"1.3 Reperesent motion MCQ #61","q":"40a95b_061q.webp","a":"40a95b_061a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_062","src":"1.3 Reperesent motion MCQ #62","q":"40a95b_062q.webp","a":"40a95b_062a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_063","src":"1.3 Reperesent motion MCQ #63","q":"40a95b_063q.webp","a":"40a95b_063a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_064","src":"1.3 Reperesent motion MCQ #64","q":"40a95b_064q.webp","a":"40a95b_064a.webp","opts":["A","B","C","D","E"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_065","src":"1.3 Reperesent motion MCQ #65","q":"40a95b_065q.webp","a":"40a95b_065a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_066","src":"1.3 Reperesent motion MCQ #66","q":"40a95b_066q.webp","a":"40a95b_066a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_067","src":"1.3 Reperesent motion MCQ #67","q":"40a95b_067q.webp","a":"40a95b_067a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_068","src":"1.3 Reperesent motion MCQ #68","q":"40a95b_068q.webp","a":"40a95b_068a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":"40a95b_068s","items":[{"id":"40a95b_069","src":"1.3 Reperesent motion MCQ #69","q":"40a95b_069q.webp","a":"40a95b_069a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_070","src":"1.3 Reperesent motion MCQ #70","q":"40a95b_070q.webp","a":"40a95b_070a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_071","src":"1.3 Reperesent motion MCQ #71","q":"40a95b_071q.webp","a":"40a95b_071a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_072","src":"1.3 Reperesent motion MCQ #72","q":"40a95b_072q.webp","a":"40a95b_072a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_076","src":"1.3 Reperesent motion MCQ #76","q":"40a95b_076q.webp","a":"40a95b_076a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_077","src":"1.3 Reperesent motion MCQ #77","q":"40a95b_077q.webp","a":"40a95b_077a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_079","src":"1.3 Reperesent motion MCQ #79","q":"40a95b_079q.webp","a":"40a95b_079a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_080","src":"1.3 Reperesent motion MCQ #80","q":"40a95b_080q.webp","a":"40a95b_080a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_081","src":"1.3 Reperesent motion MCQ #81","q":"40a95b_081q.webp","a":"40a95b_081a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_082","src":"1.3 Reperesent motion MCQ #82","q":"40a95b_082q.webp","a":"40a95b_082a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_083","src":"1.3 Reperesent motion MCQ #83","q":"40a95b_083q.webp","a":"40a95b_083a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_084","src":"1.3 Reperesent motion MCQ #84","q":"40a95b_084q.webp","a":"40a95b_084a.webp","opts":["A","B","C","D"],"key":["C","D"],"multi":true,"pts":null}]},{"stem":null,"items":[{"id":"40a95b_087","src":"1.3 Reperesent motion MCQ #87","q":"40a95b_087q.webp","a":"40a95b_087a.webp","opts":["A","B","C","D"],"key":["A","D"],"multi":true,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_001","src":"1.2 displacement, velocity and acceleration #1","q":"e87c60_001q.webp","a":"e87c60_001a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_002","src":"1.2 displacement, velocity and acceleration #2","q":"e87c60_002q.webp","a":"e87c60_002a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_003","src":"1.2 displacement, velocity and acceleration #3","q":"e87c60_003q.webp","a":"e87c60_003a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_004","src":"1.2 displacement, velocity and acceleration #4","q":"e87c60_004q.webp","a":"e87c60_004a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_005","src":"1.2 displacement, velocity and acceleration #5","q":"e87c60_005q.webp","a":"e87c60_005a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_006","src":"1.2 displacement, velocity and acceleration #6","q":"e87c60_006q.webp","a":"e87c60_006a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_008","src":"1.2 displacement, velocity and acceleration #8","q":"e87c60_008q.webp","a":"e87c60_008a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_009","src":"1.2 displacement, velocity and acceleration #9","q":"e87c60_009q.webp","a":"e87c60_009a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_012","src":"1.2 displacement, velocity and acceleration #12","q":"e87c60_012q.webp","a":"e87c60_012a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_015","src":"1.2 displacement, velocity and acceleration #15","q":"e87c60_015q.webp","a":"e87c60_015a.webp","opts":["A","B","C","D","E"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_022","src":"1.2 displacement, velocity and acceleration #22","q":"e87c60_022q.webp","a":"e87c60_022a.webp","opts":["A","B","C","D","E"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_024","src":"1.2 displacement, velocity and acceleration #24","q":"e87c60_024q.webp","a":"e87c60_024a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_025","src":"1.2 displacement, velocity and acceleration #25","q":"e87c60_025q.webp","a":"e87c60_025a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e87c60_026","src":"1.2 displacement, velocity and acceleration #26","q":"e87c60_026q.webp","a":"e87c60_026a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2c4def_006","src":"Copy of kin mcq #6","q":"2c4def_006q.webp","a":"2c4def_006a.webp","opts":["A","B","C","D","E"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2c4def_016","src":"Copy of kin mcq #16","q":"2c4def_016q.webp","a":"2c4def_016a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2c4def_018","src":"Copy of kin mcq #18","q":"2c4def_018q.webp","a":"2c4def_018a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":"2c4def_019s","items":[{"id":"2c4def_020","src":"Copy of kin mcq #20","q":"2c4def_020q.webp","a":"2c4def_020a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2c4def_025","src":"Copy of kin mcq #25","q":"2c4def_025q.webp","a":"2c4def_025a.webp","opts":["A","B","C","D"],"key":["A","B"],"multi":true,"pts":null}]},{"stem":null,"items":[{"id":"2c4def_032","src":"Copy of kin mcq #32","q":"2c4def_032q.webp","a":"2c4def_032a.webp","opts":["A","B","C","D","E"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2c4def_033","src":"Copy of kin mcq #33","q":"2c4def_033q.webp","a":"2c4def_033a.webp","opts":["A","B","C","D"],"key":["A","C"],"multi":true,"pts":null}]},{"stem":null,"items":[{"id":"2c4def_040","src":"Copy of kin mcq #40","q":"2c4def_040q.webp","a":"2c4def_040a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2c4def_058","src":"Copy of kin mcq #58","q":"2c4def_058q.webp","a":"2c4def_058a.webp","opts":["A","B","C","D","E"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2c4def_059","src":"Copy of kin mcq #59","q":"2c4def_059q.webp","a":"2c4def_059a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2c4def_060","src":"Copy of kin mcq #60","q":"2c4def_060q.webp","a":"2c4def_060a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2c4def_070","src":"Copy of kin mcq #70","q":"2c4def_070q.webp","a":"2c4def_070a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"2c4def_072","src":"Copy of kin mcq #72","q":"2c4def_072q.webp","a":"2c4def_072a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"e8f5ac_018","src":"IMPULES AND MOMENTUM 1 MCQ #18","q":"e8f5ac_018q.webp","a":"e8f5ac_018a.webp","opts":["A","B","C","D"],"key":["A","D"],"multi":true,"pts":null}]},{"stem":null,"items":[{"id":"f1e090_001","src":"1.5 MCQ #1","q":"f1e090_001q.webp","a":"f1e090_001a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"f1e090_010","src":"1.5 MCQ #10","q":"f1e090_010q.webp","a":"f1e090_010a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"f1e090_011","src":"1.5 MCQ #11","q":"f1e090_011q.webp","a":"f1e090_011a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"f1e090_012","src":"1.5 MCQ #12","q":"f1e090_012q.webp","a":"f1e090_012a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"f1e090_013","src":"1.5 MCQ #13","q":"f1e090_013q.webp","a":"f1e090_013a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"f1e090_014","src":"1.5 MCQ #14","q":"f1e090_014q.webp","a":"f1e090_014a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"f1e090_015","src":"1.5 MCQ #15","q":"f1e090_015q.webp","a":"f1e090_015a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"f1e090_016","src":"1.5 MCQ #16","q":"f1e090_016q.webp","a":"f1e090_016a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"f1e090_017","src":"1.5 MCQ #17","q":"f1e090_017q.webp","a":"f1e090_017a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"ed1419_001","src":"1.4 #1","q":"ed1419_001q.webp","a":"ed1419_001a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"ed1419_002","src":"1.4 #2","q":"ed1419_002q.webp","a":"ed1419_002a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"ed1419_003","src":"1.4 #3","q":"ed1419_003q.webp","a":"ed1419_003a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"ed1419_005","src":"1.4 #5","q":"ed1419_005q.webp","a":"ed1419_005a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"ed1419_006","src":"1.4 #6","q":"ed1419_006q.webp","a":"ed1419_006a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"ed1419_007","src":"1.4 #7","q":"ed1419_007q.webp","a":"ed1419_007a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"ed1419_008","src":"1.4 #8","q":"ed1419_008q.webp","a":"ed1419_008a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"ed1419_009","src":"1.4 #9","q":"ed1419_009q.webp","a":"ed1419_009a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"ed1419_010","src":"1.4 #10","q":"ed1419_010q.webp","a":"ed1419_010a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"ed1419_011","src":"1.4 #11","q":"ed1419_011q.webp","a":"ed1419_011a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"b6519d_002","src":"1.1 scalar and vector #2","q":"b6519d_002q.webp","a":"b6519d_002a.webp","opts":["A","B","C","D"],"key":["A"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"b6519d_003","src":"1.1 scalar and vector #3","q":"b6519d_003q.webp","a":"b6519d_003a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"b6519d_004","src":"1.1 scalar and vector #4","q":"b6519d_004q.webp","a":"b6519d_004a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"b6519d_005","src":"1.1 scalar and vector #5","q":"b6519d_005q.webp","a":"b6519d_005a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"b6519d_006","src":"1.1 scalar and vector #6","q":"b6519d_006q.webp","a":"b6519d_006a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"b6519d_007","src":"1.1 scalar and vector #7","q":"b6519d_007q.webp","a":"b6519d_007a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"b6519d_008","src":"1.1 scalar and vector #8","q":"b6519d_008q.webp","a":"b6519d_008a.webp","opts":["A","B","C","D"],"key":["C"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"b6519d_009","src":"1.1 scalar and vector #9","q":"b6519d_009q.webp","a":"b6519d_009a.webp","opts":["A","B","C","D"],"key":["D"],"multi":false,"pts":null}]},{"stem":null,"items":[{"id":"b6519d_010","src":"1.1 scalar and vector #10","q":"b6519d_010q.webp","a":"b6519d_010a.webp","opts":["A","B","C","D"],"key":["B"],"multi":false,"pts":null}]}],"frq":[{"stem":null,"items":[{"id":"692475_001","src":"1.3 FRQ MR #1","q":"692475_001q.webp","a":"692475_001a.webp","opts":[],"key":[],"multi":false,"pts":15}]},{"stem":null,"items":[{"id":"e2faff_010","src":"Kinematic short Q general #10","q":"e2faff_010q.webp","a":"e2faff_010a.webp","opts":[],"key":[],"multi":false,"pts":15}]},{"stem":null,"items":[{"id":"e2faff_028","src":"Kinematic short Q general #28","q":"e2faff_028q.webp","a":"e2faff_028a.webp","opts":[],"key":[],"multi":false,"pts":7}]},{"stem":null,"items":[{"id":"27df76_012","src":"kinematic FRQ QQT #12","q":"27df76_012q.webp","a":"27df76_012a.webp","opts":[],"key":[],"multi":false,"pts":12}]},{"stem":null,"items":[{"id":"6943e5_013","src":"1.5 FRQ #13","q":"6943e5_013q.webp","a":"6943e5_013a.webp","opts":[],"key":[],"multi":false,"pts":12}]},{"stem":null,"items":[{"id":"d851b6_003","src":"1.3 QQT,LAB #3","q":"d851b6_003q.webp","a":"d851b6_003a.webp","opts":[],"key":[],"multi":false,"pts":15}]},{"stem":null,"items":[{"id":"afc6a6_001","src":"Unit 1 Progress Check - FRQ 3 #1","q":"afc6a6_001q.webp","a":"afc6a6_001a.webp","opts":[],"key":[],"multi":false,"pts":10}]}],"stems":{"40a95b_017s":"40a95b_017s.webp","40a95b_020s":"40a95b_020s.webp","40a95b_073s":"40a95b_073s.webp","40a95b_084s":"40a95b_084s.webp","2c4def_001s":"2c4def_001s.webp","2c4def_051s":"2c4def_051s.webp","40a95b_003s":"40a95b_003s.webp","40a95b_053s":"40a95b_053s.webp","40a95b_068s":"40a95b_068s.webp","2c4def_019s":"2c4def_019s.webp"}};
+const IMG = f => 'img/' + f;
+const $ = id => document.getElementById(id);
+const store = {get(k, d){try{const v = localStorage.getItem(k);return v ? JSON.parse(v) : d}catch(e){return d}},
+               set(k, v){try{localStorage.setItem(k, JSON.stringify(v))}catch(e){}}, del(k){try{localStorage.removeItem(k)}catch(e){}}};
+const SEC_M = 85 * 60 / 42, SEC_F = 95 * 60 / 4;
+const allM = BANK.mcq.reduce((s, g) => s + g.items.length, 0), allF = BANK.frq.reduce((s, g) => s + g.items.length, 0);
+const topicOf = src => { const m = src.match(/^1\.(\d)/); return m ? '1.' + m[1] : '综合练习'; };
+const fmt = s => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60); return m + ':' + String(s % 60).padStart(2, '0'); };
+let timed = true, S = null, tick = null, revFilter = 'all';
+
+// ---------- setup ----------
+$('sM').textContent = allM; $('sF').textContent = allF;
+$('nM').max = Math.min(42, allM); $('nF').max = Math.min(4, allF);
+$('nMmax').textContent = `（题库 ${allM} 道，最多 ${$('nM').max}）`; $('nFmax').textContent = `（题库 ${allF} 道）`;
+$('art').innerHTML = Array.from({length: 16}, (_, r) => `<div><b>${r + 1}</b>${'ABCD'.split('').map((c, k) => `<i class="${(r * 7 + k * 3) % 4 === 0 && k === (r % 4) ? 'f' : ''}"></i>`).join('')}</div>`).join('');
+const seen = () => store.get('ap1u1-seen', {});
+$('sDone').textContent = Object.keys(seen()).length;
+function note(){
+  $('nMv').textContent = $('nM').value; $('nFv').textContent = $('nF').value;
+  const t = $('nM').value * SEC_M + $('nF').value * SEC_F;
+  $('tNote').textContent = timed ? `Section I ${fmt($('nM').value * SEC_M)}，Section II ${fmt($('nF').value * SEC_F)}，合计约 ${Math.round(t / 60)} 分钟。时间到自动进入下一部分/交卷。` : '不限时，只记录用时。';
+  $('start').disabled = (+$('nM').value + +$('nF').value) === 0;
+}
+['nM', 'nF'].forEach(id => $(id).addEventListener('input', note));
+$('tAP').onclick = () => { timed = true; $('tAP').setAttribute('aria-pressed', 'true'); $('tOff').setAttribute('aria-pressed', 'false'); note(); };
+$('tOff').onclick = () => { timed = false; $('tOff').setAttribute('aria-pressed', 'true'); $('tAP').setAttribute('aria-pressed', 'false'); note(); };
+$('who').value = store.get('ap1-who', '');
+note();
+if (store.get('ap1u1-state', null)?.phase === 'exam') $('resume').classList.remove('hide');
+
+function shuffle(a){ for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+function pick(groups, n, preferFresh, only){
+  const sn = seen();
+  let pool = groups.map(g => ({...g, items: only ? g.items.filter(i => only.has(i.id)) : g.items})).filter(g => g.items.length);
+  pool = shuffle(pool);
+  if (preferFresh) pool.sort((a, b) => a.items.filter(i => sn[i.id]).length / a.items.length - b.items.filter(i => sn[i.id]).length / b.items.length);
+  const out = []; let c = 0;
+  for (const g of pool) { if (c >= n) break; if (c + g.items.length > n && pool.some(h => h.items.length <= n - c && !out.includes(h))) continue; out.push(g); c += g.items.length; }
+  return out.flatMap(g => g.items.map(i => ({...i, stem: g.stem})));
+}
+function begin(qsM, qsF){
+  const qs = [...qsM.map(q => ({...q, t: 'mcq'})), ...qsF.map(q => ({...q, t: 'frq'}))];
+  S = {phase: 'exam', qs, ans: {}, flag: {}, cur: 0, sec: qsM.length ? 'M' : 'F', timed,
+       left: {M: qsM.length * SEC_M, F: qsF.length * SEC_F}, used: {M: 0, F: 0}, self: {}, who: $('who').value.trim(), started: Date.now()};
+  store.set('ap1-who', S.who);
+  if (!qsM.length) S.cur = 0;
+  enterExam();
+}
+$('start').onclick = () => begin(pick(BANK.mcq, +$('nM').value, $('fresh').checked), pick(BANK.frq, +$('nF').value, $('fresh').checked));
+$('resume').onclick = () => { S = store.get('ap1u1-state', null); if (S) enterExam(); };
+
+// ---------- exam ----------
+const idxSec = sec => S.qs.map((q, i) => [q, i]).filter(([q]) => (q.t === 'mcq') === (sec === 'M')).map(([, i]) => i);
+function show(v){ ['vSetup', 'vExam', 'vRes'].forEach(x => $(x).classList.toggle('hide', x !== v)); window.scrollTo(0, 0); }
+function enterExam(){
+  show('vExam');
+  const iM = idxSec('M'), iF = idxSec('F');
+  if (S.sec === 'F' && !iF.includes(S.cur)) S.cur = iF[0];
+  if (S.sec === 'M' && !iM.includes(S.cur)) S.cur = iM[0];
+  clearInterval(tick);
+  tick = setInterval(() => {
+    S.used[S.sec] += 1;
+    if (S.timed) { S.left[S.sec] -= 1; if (S.left[S.sec] <= 0) { if (S.sec === 'M' && idxSec('F').length) { toast('Section I 时间到，进入 Section II'); gotoF(); } else { toast('时间到，已自动交卷'); finish(); } return; } }
+    paintTimer(); if (S.used[S.sec] % 5 === 0) save();
+  }, 1000);
+  render();
+}
+function save(){ store.set('ap1u1-state', S); }
+function paintTimer(){
+  const t = $('timer');
+  if (S.timed) { t.textContent = fmt(S.left[S.sec]); t.classList.toggle('low', S.left[S.sec] < 120); }
+  else { t.textContent = '用时 ' + fmt(S.used[S.sec]); t.classList.remove('low'); }
+}
+function img(f, alt){ return `<img src="${IMG(f)}" alt="${alt}" loading="lazy">`; }
+function render(){
+  const q = S.qs[S.cur], ids = idxSec(S.sec), pos = ids.indexOf(S.cur);
+  $('secName').textContent = S.sec === 'M' ? 'Section I · 选择题' : 'Section II · FRQ';
+  $('prog').textContent = `第 ${pos + 1} / ${ids.length} 题`;
+  $('toFRQ').classList.toggle('hide', !(S.sec === 'M' && idxSec('F').length));
+  const stem = q.stem ? `<div class="stem"><span class="stemtag">本题组共用的情境</span>${img(BANK.stems[q.stem], '情境')}</div>` : '';
+  $('qPage').innerHTML = `${stem}${img(q.q, '题目')}<p style="font-size:12px;color:#8a857e;margin:10px 0 0">出处：${q.src}${q.t === 'frq' ? ` · 满分 ${q.pts} 分` : ''}</p>`;
+  if (q.t === 'mcq') {
+    const sel = S.ans[q.id] || [];
+    $('ansArea').innerHTML = `<div class="choices ${q.multi ? 'multi' : ''}" role="group" aria-label="选择答案">${q.opts.map(o => `<button class="bub" data-o="${o}" aria-pressed="${sel.includes(o)}">${o}</button>`).join('')}</div>
+      <p class="mut" style="font-size:14px;margin:0">${q.multi ? '本题选两个答案（两个都对才得分）。' : '单选，点同一项可取消。'}</p>`;
+    $('ansArea').querySelectorAll('.bub').forEach(b => b.onclick = () => choose(b.dataset.o));
+  } else {
+    $('ansArea').innerHTML = `<p class="mut" style="font-size:14px;margin:16px 0 8px">FRQ 请在纸上作答（画图、推导都在纸上）。下面可以记下关键结论，交卷后会和评分标准放在一起，方便自评。</p>
+      <textarea id="frqTxt" placeholder="可选：记录你的答案要点">${S.ans[q.id] || ''}</textarea>`;
+    $('frqTxt').oninput = e => { S.ans[q.id] = e.target.value; grids(); };
+  }
+  $('flag').textContent = S.flag[q.id] ? '取消标记' : '标记待检查';
+  $('prev').disabled = pos === 0; $('next').disabled = pos === ids.length - 1;
+  grids(); paintTimer(); save();
+  const nx = S.qs[ids[pos + 1]]; if (nx) { new Image().src = IMG(nx.q); }
+}
+function grids(){
+  const cell = i => { const q = S.qs[i], a = S.ans[q.id]; const done = q.t === 'mcq' ? (a && a.length) : (a && a.trim()); const n = idxSec(q.t === 'mcq' ? 'M' : 'F').indexOf(i) + 1;
+    return `<button class="cell ${done ? 'ans' : ''} ${i === S.cur ? 'cur' : ''} ${S.flag[q.id] ? 'flg' : ''}" data-i="${i}" ${(q.t === 'mcq') !== (S.sec === 'M') ? 'disabled' : ''} aria-label="第${n}题">${n}</button>`; };
+  $('gridM').innerHTML = idxSec('M').map(cell).join('');
+  $('gridF').innerHTML = idxSec('F').map(cell).join(''); $('gridFwrap').classList.toggle('hide', !idxSec('F').length);
+  document.querySelectorAll('.cell').forEach(c => c.onclick = () => { S.cur = +c.dataset.i; render(); });
+}
+function choose(o){
+  const q = S.qs[S.cur]; let a = S.ans[q.id] || [];
+  if (q.multi) { a = a.includes(o) ? a.filter(x => x !== o) : (a.length >= 2 ? [a[1], o] : [...a, o]); }
+  else a = a[0] === o ? [] : [o];
+  S.ans[q.id] = a; render();
+}
+function move(d){ const ids = idxSec(S.sec), p = ids.indexOf(S.cur) + d; if (p >= 0 && p < ids.length) { S.cur = ids[p]; render(); window.scrollTo({top: 0}); } }
+$('prev').onclick = () => move(-1); $('next').onclick = () => move(1);
+$('flag').onclick = () => { const q = S.qs[S.cur]; S.flag[q.id] = !S.flag[q.id]; render(); };
+document.addEventListener('keydown', e => {
+  if ($('vExam').classList.contains('hide') || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'INPUT' || $('dlg').open) return;
+  if (e.key === 'ArrowRight') move(1); else if (e.key === 'ArrowLeft') move(-1);
+  else { const q = S.qs[S.cur], k = e.key.toUpperCase(); if (q.t === 'mcq' && q.opts.includes(k)) choose(k); }
+});
+function ask(msg){ return new Promise(res => { $('dlgMsg').textContent = msg; $('dlg').showModal(); $('dlgYes').onclick = () => { $('dlg').close(); res(true); }; $('dlgNo').onclick = () => { $('dlg').close(); res(false); }; }); }
+function gotoF(){ S.sec = 'F'; S.cur = idxSec('F')[0]; render(); }
+$('toFRQ').onclick = async () => { const un = idxSec('M').filter(i => !(S.ans[S.qs[i].id] || []).length).length;
+  if (await ask(`进入 Section II 后不能再回到选择题。${un ? `还有 ${un} 道选择题没作答。` : ''}确定进入？`)) gotoF(); };
+$('submit').onclick = async () => {
+  const un = S.qs.filter(q => q.t === 'mcq' && !(S.ans[q.id] || []).length).length;
+  if (await ask(`确定交卷吗？${un ? `还有 ${un} 道选择题没作答，按 0 分计。` : ''}`)) finish();
+};
+
+// ---------- results ----------
+const right = q => { const a = (S.ans[q.id] || []).slice().sort().join(''); return a && a === q.key.slice().sort().join(''); };
+function finish(){
+  clearInterval(tick); S.phase = 'done';
+  const sn = seen(); S.qs.forEach(q => sn[q.id] = (sn[q.id] || 0) + 1); store.set('ap1u1-seen', sn);
+  store.del('ap1u1-state'); store.set('ap1u1-last', S);
+  showRes();
+}
+function totals(){
+  const M = S.qs.filter(q => q.t === 'mcq'), F = S.qs.filter(q => q.t === 'frq');
+  const mOK = M.filter(right).length, fMax = F.reduce((s, q) => s + q.pts, 0), fGot = F.reduce((s, q) => s + Math.min(q.pts, Math.max(0, +S.self[q.id] || 0)), 0);
+  const fDone = F.every(q => S.self[q.id] !== undefined && S.self[q.id] !== '');
+  const parts = []; if (M.length) parts.push(mOK / M.length); if (F.length) parts.push(fGot / fMax);
+  return {M, F, mOK, fMax, fGot, fDone, pct: parts.reduce((a, b) => a + b, 0) / parts.length};
+}
+function paintScore(){
+  const t = totals();
+  $('rTotal').textContent = Math.round(t.pct * 100) + '%'; $('rTotalBar').style.width = (t.pct * 100) + '%';
+  $('rNote').textContent = t.M.length && t.F.length ? '选择题与 FRQ 各占 50%，与 AP 正式考试相同。' + (t.fDone ? '' : ' FRQ 还没全部自评，分数会随你填写更新。') : '';
+  $('rM').textContent = t.M.length ? `${t.mOK} / ${t.M.length}` : '—';
+  $('rMt').textContent = t.M.length ? `正确率 ${Math.round(t.mOK / t.M.length * 100)}% · 用时 ${fmt(S.used.M)}` : '本次未选';
+  $('rF').textContent = t.F.length ? `${t.fGot} / ${t.fMax}` : '—';
+  $('rFt').textContent = t.F.length ? `用时 ${fmt(S.used.F)} · 对照下方评分标准逐项给分` : '本次未选';
+  const by = {}; t.M.forEach(q => { const k = topicOf(q.src); by[k] = by[k] || [0, 0]; by[k][1]++; if (right(q)) by[k][0]++; });
+  $('topicCard').classList.toggle('hide', !t.M.length);
+  $('topics').innerHTML = Object.keys(by).sort().map(k => `<div><span>${k === '综合练习' ? k : 'Topic ' + k}</span><div class="meter" style="margin:0"><i style="width:${by[k][0] / by[k][1] * 100}%"></i></div><span>${by[k][0]}/${by[k][1]}</span></div>`).join('');
+  store.set('ap1u1-last', S);
+}
+function showRes(){
+  show('vRes');
+  $('resWho').textContent = (S.who ? S.who + ' · ' : '') + new Date(S.started).toLocaleString('zh-CN', {dateStyle: 'medium', timeStyle: 'short'});
+  $('resTitle').textContent = 'Unit 1 运动学 · 测评结果';
+  paintScore(); renderReview();
+}
+function renderReview(){
+  let list = S.qs.map((q, i) => [q, i]);
+  if (revFilter === 'wrong') list = list.filter(([q]) => q.t === 'mcq' && !right(q));
+  if (revFilter === 'flag') list = list.filter(([q]) => S.flag[q.id]);
+  if (revFilter === 'frq') list = list.filter(([q]) => q.t === 'frq');
+  const nM = q => idxSec(q.t === 'mcq' ? 'M' : 'F').indexOf(S.qs.indexOf(q)) + 1;
+  $('review').innerHTML = list.length ? list.map(([q]) => {
+    const stem = q.stem ? `<div class="lbl">共用情境</div><div class="page">${img(BANK.stems[q.stem], '情境')}</div>` : '';
+    if (q.t === 'mcq') {
+      const a = (S.ans[q.id] || []).join('、') || '未作答', ok = right(q);
+      return `<details class="rv"><summary><strong>选择题 ${nM(q)}</strong><span class="tag ${ok ? 'ok' : 'bad'}">${ok ? '正确' : '错误'}</span><span>你的答案：<b>${a}</b></span><span>正确答案：<b>${q.key.join('、')}</b></span>${S.flag[q.id] ? '<span class="tag na">已标记</span>' : ''}<span class="mut" style="font-size:13px">${q.src}</span></summary>
+        <div class="rvbody">${stem}<div class="lbl">评分标准 / 解析（绿色框为正确选项）</div><div class="page">${img(q.a, '答案')}</div></div></details>`;
+    }
+    const v = S.self[q.id] ?? '';
+    return `<details class="rv" open><summary><strong>FRQ ${nM(q)}</strong><span class="tag ${v === '' ? 'na' : 'ok'}">${v === '' ? '待自评' : `自评 ${v}/${q.pts}`}</span><span class="mut" style="font-size:13px">${q.src}</span></summary>
+      <div class="rvbody">${stem}<div class="lbl">题目</div><div class="page">${img(q.q, '题目')}</div>
+      ${S.ans[q.id] ? `<div class="lbl">你的要点</div><div class="mine"></div>` : ''}
+      <div class="selfscore"><label for="ss_${q.id}"><b>按评分标准给自己打分</b>（满分 ${q.pts}）</label><input id="ss_${q.id}" type="number" inputmode="numeric" min="0" max="${q.pts}" value="${v}" data-id="${q.id}"></div>
+      <div class="lbl">评分标准（每小问的得分点；绿色格为该小问满分）</div><div class="page">${img(q.a, '评分标准')}</div></div></details>`;
+  }).join('') : '<p class="mut">这一类没有题目。</p>';
+  $('review').querySelectorAll('.mine').forEach((el, k) => { const q = list.filter(([x]) => x.t === 'frq' && S.ans[x.id])[k]; if (q) el.textContent = S.ans[q[0].id]; });
+  $('review').querySelectorAll('.selfscore input').forEach(inp => inp.oninput = () => {
+    const q = S.qs.find(x => x.id === inp.dataset.id); let v = inp.value === '' ? '' : Math.max(0, Math.min(q.pts, Math.round(+inp.value)));
+    S.self[q.id] = v; const tag = inp.closest('.rv').querySelector('.tag'); tag.className = 'tag ' + (v === '' ? 'na' : 'ok'); tag.textContent = v === '' ? '待自评' : `自评 ${v}/${q.pts}`; paintScore();
+  });
+}
+$('filters').querySelectorAll('button').forEach(b => b.onclick = () => { revFilter = b.dataset.f; $('filters').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b)); renderReview(); });
+$('again').onclick = () => { show('vSetup'); $('sDone').textContent = Object.keys(seen()).length; };
+$('home').onclick = $('again').onclick;
+$('wrongOnly').onclick = () => {
+  const wrong = new Set(S.qs.filter(q => q.t === 'mcq' && !right(q)).map(q => q.id));
+  if (!wrong.size) { toast('这次选择题全对，没有错题可重做'); return; }
+  timed = S.timed; begin(pick(BANK.mcq, wrong.size, false, wrong), []);
+};
+$('copy').onclick = async () => {
+  const t = totals();
+  const wrongList = t.M.filter(q => !right(q)).map(q => `${idxSec('M').indexOf(S.qs.indexOf(q)) + 1}(${q.src})`).join('；');
+  const txt = [`AP Physics 1 Unit 1 运动学测评${S.who ? ' · ' + S.who : ''}`, $('resWho').textContent,
+    `综合 ${Math.round(t.pct * 100)}%`, t.M.length ? `选择题 ${t.mOK}/${t.M.length}，用时 ${fmt(S.used.M)}` : '', t.F.length ? `FRQ 自评 ${t.fGot}/${t.fMax}` : '',
+    wrongList ? `错题：${wrongList}` : ''].filter(Boolean).join('\n');
+  try { await navigator.clipboard.writeText(txt); toast('已复制，可直接粘贴发送'); } catch (e) { toast('无法访问剪贴板，请手动选中复制'); }
+};
+document.addEventListener('click', e => { if (e.target.tagName === 'IMG' && e.target.closest('.page')) e.target.closest('.page').classList.toggle('zoom'); });
+function toast(m){ const t = $('toast'); t.textContent = m; t.classList.remove('hide'); clearTimeout(t._h); t._h = setTimeout(() => t.classList.add('hide'), 2600); }
+}
+</script>
+</body>
+</html>
