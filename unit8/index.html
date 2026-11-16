@@ -129,6 +129,13 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
           <div class="row"><input id="nF" type="range" min="0" max="4" value="1" class="grow"><span class="big" id="nFv">1</span></div>
         </div>
         <div class="field">
+          <label>模式</label>
+          <div class="seg" role="group" aria-label="模式">
+            <button id="mPrac" aria-pressed="true">练习模式</button><button id="mExam" aria-pressed="false">考试模式</button>
+          </div>
+          <p class="mut" id="modeNote" style="margin:8px 0 0;font-size:14px"></p>
+        </div>
+        <div class="field">
           <label>计时</label>
           <div class="seg" role="group" aria-label="计时方式">
             <button id="tAP" aria-pressed="true">AP 标准节奏</button><button id="tOff" aria-pressed="false">不计时</button>
@@ -143,7 +150,6 @@ dialog::backdrop{background:rgba(0,0,0,.45)}
           <button class="pri" id="start">开始测评</button>
           <button id="resume" class="hide">继续上次未完成的测评</button>
           <label class="row mut" style="font-size:14px;gap:6px"><input type="checkbox" id="fresh" checked> 优先抽没做过的题</label>
-          <label class="row mut" style="font-size:14px;gap:6px"><input type="checkbox" id="allowPeek" checked> 做完一题后允许查看答案</label>
         </div>
       </div>
     </div>
@@ -226,7 +232,7 @@ const SEC_M = 85 * 60 / 42, SEC_F = 95 * 60 / 4;
 const allM = BANK.mcq.reduce((s, g) => s + g.items.length, 0), allF = BANK.frq.reduce((s, g) => s + g.items.length, 0);
 const topicOf = src => { const m = src.match(/^8\.(\d)/); return m ? '8.' + m[1] : '综合练习'; };
 const fmt = s => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60); return m + ':' + String(s % 60).padStart(2, '0'); };
-let timed = true, S = null, tick = null, revFilter = 'all';
+let timed = true, practice = true, S = null, tick = null, revFilter = 'all';
 
 // ---------- setup ----------
 $('sM').textContent = allM; $('sF').textContent = allF;
@@ -244,6 +250,9 @@ function note(){
 ['nM', 'nF'].forEach(id => $(id).addEventListener('input', note));
 $('tAP').onclick = () => { timed = true; $('tAP').setAttribute('aria-pressed', 'true'); $('tOff').setAttribute('aria-pressed', 'false'); note(); };
 $('tOff').onclick = () => { timed = false; $('tOff').setAttribute('aria-pressed', 'true'); $('tAP').setAttribute('aria-pressed', 'false'); note(); };
+function setMode(p){ practice = p; $('mPrac').setAttribute('aria-pressed', p); $('mExam').setAttribute('aria-pressed', !p);
+  $('modeNote').textContent = p ? '每道题作答后可点「查看答案」，即时看对错和解析（看过的题作答锁定）。' : '作答过程中不显示答案，交卷后统一查看。'; }
+$('mPrac').onclick = () => setMode(true); $('mExam').onclick = () => setMode(false); setMode(true);
 $('who').value = store.get('ap1-who', '');
 note();
 if (store.get('ap1u8-state', null)?.phase === 'exam') $('resume').classList.remove('hide');
@@ -260,7 +269,7 @@ function pick(groups, n, preferFresh, only){
 }
 function begin(qsM, qsF){
   const qs = [...qsM.map(q => ({...q, t: 'mcq'})), ...qsF.map(q => ({...q, t: 'frq'}))];
-  S = {phase: 'exam', qs, ans: {}, flag: {}, peek: {}, allowPeek: $('allowPeek').checked, cur: 0, sec: qsM.length ? 'M' : 'F', timed,
+  S = {phase: 'exam', qs, ans: {}, flag: {}, peek: {}, allowPeek: practice, cur: 0, sec: qsM.length ? 'M' : 'F', timed,
        left: {M: qsM.length * SEC_M, F: qsF.length * SEC_F}, used: {M: 0, F: 0}, self: {}, who: $('who').value.trim(), started: Date.now()};
   store.set('ap1-who', S.who);
   if (!qsM.length) S.cur = 0;
@@ -313,8 +322,7 @@ function render(){
   }
   const pb = $('ansArea').querySelector('.peekbtn');
   if (pb) pb.onclick = async () => {
-    const msg = q.t === 'mcq' ? '查看答案后，这道题的作答将被锁定，不能再修改。确定查看？' : '查看评分标准后，作答要点将变为只读。确定查看？';
-    if (await ask(msg)) { S.peek[q.id] = true; render(); }
+    S.peek[q.id] = true; render();
   };
   $('flag').textContent = S.flag[q.id] ? '取消标记' : '标记待检查';
   $('prev').disabled = pos === 0; $('next').disabled = pos === ids.length - 1;
